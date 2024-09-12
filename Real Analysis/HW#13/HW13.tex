@@ -1,0 +1,547 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\FF}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\BB}{\mathcal{B}}
+
+
+\newcommand{\QQ}{\ensuremath{\mathbb Q}}
+
+
+
+
+
+\let\latexchi\chi
+\makeatletter
+\renewcommand\chi{\@ifnextchar_\sub@chi\latexchi}
+\newcommand{\sub@chi}[2]{% #1 is _, #2 is the subscript
+  \@ifnextchar^{\subsup@chi{#2}}{\latexchi^{}_{#2}}%
+}
+\newcommand{\subsup@chi}[3]{% #1 is the subscript, #2 is ^, #3 is the superscript
+\latexchi_{#1}^{#3}%
+}
+\makeatother
+\def\aev{\overset{\text{a.e.}}}
+
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework \#13}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+
+
+
+\begin{problems}
+
+  \begin{lemma}1 The Lebesgue integral for nonnegative measurable functions is translation invariant. If $f$ is a nonnegative measurable function, then for all $c \in \RR$, we know $\int f = \int f(x + c)$.
+    \begin{proof} Suppose $f$ is nonnegative measurable function and $c \in \RR$. Let $f' = f(x + c)$  and note that it is also a nonnegative measurable function. By definition of the Lebesgue integral we know that, 
+      \begin{equation*}
+        \int f = \sup \left\{\int \varphi : 0 \leq \varphi \leq f, \text{ $\varphi$, is simple and integrable}\right\}. 
+      \end{equation*}
+      \begin{equation*}
+        \int f' = \sup \left\{\int \psi : 0 \leq \psi \leq f(x + c), \text{ $\psi$, is simple and integrable}\right\}. 
+      \end{equation*}
+      Let,    
+       \begin{equation*}
+        S_f = \left\{\int \varphi : 0 \leq \varphi \leq f, \varphi \text{ simple and integrable}\right\}
+      \end{equation*}
+      and define $S_{f'}$ analogously. Let $\int \varphi \in S_f$, and by definition we know that $0 \leq \varphi \leq f$. We have shown that $\int \varphi = \int \varphi(x + c)$, noting that $0 \leq \varphi(x + c) \leq f'$, we find $\int \varphi \in S_{f'}$. Hence $S_f \subseteq S_{f'}$. Now consider $\int \psi \in S_{f'}$, by definition we know that  
+      $0 \leq \psi \leq f(x + c)$ and therefore $0 \leq \psi(x-c) \leq f$ so we find that $\int \psi = \int \psi(x - c)$ so $\int \psi \in S_f$. Thus $S_f = S_{f'}$ and hence $\int f = \int f'$. 
+     \end{proof}
+
+  \end{lemma}
+
+
+
+
+  \problem In your last homework you showed that Riemann integrable functions are measurable. Now show that the Riemann integral and the Lebesgue integral agree for such functions.
+  
+  \begin{proof} (Preface: Riemann integrals are denoted with $(R)$, we also recall that the Lebesgue and Riemann integrals for step functions agree, therefore integrals of step functions will be denoted with just $\int$. Also this is Theorem 18.16 in the book) Let $f \geq 0$ be a Riemann integrable function defined on an interval $[a, b]$. As stated, we have shown $f$ to be measurable in a previous homework. 
+    Recall the definition of a Riemann integrable function, there exists two sequences of step function $(\ell_n)$ and $(u_n)$ with $\ell_n \leq f \leq u_n$ such that, 
+    \begin{equation*}
+      \sup_n \int_a^b \ell_n = (R)\int_a^b f = \inf_n \int_a^b u_n
+    \end{equation*}
+    However by monotonicity of the Lebesgue integral it also follows that, 
+    \begin{equation*}
+      \sup_n \int_a^b \ell_n \leq \int_a^b f \leq \inf_n \int_a^b u_n.
+    \end{equation*}
+    Hence, 
+    \begin{equation*}
+      \int_a^b f = (R)\int_a^b f.
+    \end{equation*}
+
+    
+    \end{proof}
+
+
+  \vspace*{.15in}
+
+
+
+  \problem \textbf{Carothers 18.21}  Suppose that $f, f_n$ are non-negative measurable functions, that $f_n \to f$ and that $f_n \leq f$ for all $n$. Show that $\int f = \lim_{n \to \infty} \int f_n$    
+  \begin{proof} Suppose hat $f, f_n$ are non-negative measurable functions, that $f_n \to f$ and that $f_n \leq f$ for all $n$. By the definition of the Lebesgue integral for non-negative measurable functions, 
+    \begin{equation*}
+      \int f = \sup \left\{\int \varphi : 0 \leq \varphi \leq f, \varphi \text{ simple and integrable}\right\}.
+    \end{equation*}
+    Define the following set for a given function $f$,
+    \begin{equation*}
+      S_f = \left\{\int \varphi : 0 \leq \varphi \leq f, \varphi \text{ simple and integrable}\right\}.
+    \end{equation*}
+    Fix $n$, and let $\varphi$ be a measurable simple function with the property that $0 \leq \varphi \leq f_n$, since $f_n \leq f$ it follows that that $0 \leq \varphi \leq f$. Hence $S_{f_n} \subseteq S_f$, and therefore $\int f \geq \int f_n$ for all $n$, so therefore  $\int f \geq \lim_{n \to \infty} \int f_n$.\\
+
+    Now by Fatou's Lemma it follows, 
+    \begin{align*}
+      \int \left(\liminf_{n \to \infty} f_n\right) &\leq \liminf_{n \to \infty} \int f_n\\
+      \int \left(\lim_{n \to \infty} f_n\right) &\leq \liminf_{n \to \infty} \int f_n\\
+      \int f &\leq \liminf_{n \to \infty} \int f_n \\
+      \int f &\leq \lim_{n \to \infty} \int f_n
+    \end{align*}
+
+
+
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+  \problem \textbf{Carothers 18.26} Let $f(x) = x^{-\frac{1}{2} }$ for $0<x<1$ and $f(x) = 0$ otherwise. Let $(r_n)$ be an enumeration of $\QQ$, and let $g(x) = \sum_{n=1}^{\infty} 2^{-n} f(x-r_n)$. Show that:
+  \begin{enumerate}[(a)]
+      \item[\textbf{(a)}] $g\in L^1$, and in particular $g$ is finite a.e.
+      \begin{proof} First note that, since $f$ is measurable, and $2^{-n} > 0$ for all $n$ we know that $2^{-n}f(x-r_n)$ is a sequence of nonnegative measurable functions. Now by Corollary 18.11 it follows that, 
+        \begin{equation*}
+          \int g(x) = \int \sum_{n = 1}^\infty 2^{-n} f(x-r_n) = \sum_{n = 1}^\infty \int 2^{-n} f(x-r_n).
+        \end{equation*}
+        So therefore by translation invariance of the Lebesgue integral it follows that $\int f(x) = \int f(x-r_n)$ and therefore, 
+        \begin{equation*}
+          \int g(x) =  \sum_{n = 1}^\infty  2^{-n} \int f(x-r_n) = \sum_{n = 1}^\infty  2^{-n} \int f(x) = \sum_{n = 0}^\infty  2^{-n} = 2 .
+        \end{equation*}
+        Therefore $g\in L^1$, and $g$ is finite a.e.
+      \end{proof}
+
+      \item[\textbf{(b)}] $g$ is discontinuous at every point and is unbounded on every interval; it remains so even after modification on an arbitrary set of measure zero;
+      \begin{proof}
+        
+      \end{proof}
+
+      \item[\textbf{(c)}]  $g^2$ is finite a.e., but $g^2$ is not integrable on any interval.  
+      \begin{proof}
+        
+      \end{proof}
+  \end{enumerate}
+  \vspace*{.15in}
+
+
+
+ \problem \textbf{Carothers 18.36}    Suppose that $f, (f_n)$ are measurable and uniformly bounded on $[a,b]$. If $f_n \to f$ on $[a,b]$, prove that $ \int_a^b \abs{f_n - f} \to 0$.% Hint: Egorov    
+ \begin{proof} Suppose that $f, (f_n)$ are measurable and uniformly bounded by constant $K$ on $[a,b]$. Let $\epsilon > 0$ and by Egorov's Theorem choose a measurable set $E \subset [a, b]$ such that  $m(E) < \frac{\epsilon}{2K}$ and $f_n \to f$ uniformly on $E' = [a, b]\setminus E$. On $E'$ choose $N$ such that for all $n \geq N$, we have $|f - f_n| < \frac{\epsilon}{(b - a)}$. 
+  Now note that since $f, (f_n)$ uniformly bounded on $[a,b]$, we know that $|f - f_n| < 2K$, so it follows that for all $n \geq N$, 
+  \begin{align*}
+    \int \chi_{[a, b]} |f - f_n| &= \int \chi_{E} |f - f_n| + \int \chi_{E'} |f - f_n|\\ 
+    &< \int \chi_{E} |f - f_n| + \int \chi_{[a, b]} |f - f_n|\\ 
+    &< \frac{\epsilon}{2K}2K + (b - a)\frac{\epsilon}{(b - a)} = 2\epsilon
+  \end{align*}
+  \end{proof}
+  \vspace*{.15in}
+'
+
+
+
+  \problem \textbf{Carothers 18.39} Compute $\sum_{n=0}^{\infty}\int_{0}^{\frac{\pi}{2}} \left(1 - \sqrt{\sin(x)}\right)^n \cos(x) dx$.
+  \begin{proof} The series rewritten, with an integral over $\RR$, 
+      \begin{equation*}
+          \sum_{n=0}^{\infty}\int \chi_{[0, \frac{\pi}{2}]} \left( 1-\sqrt{\sin(x)} \right)^n\cos(x)dx
+      \end{equation*}
+      Now note that since $0 \leq \sqrt{\sin(x)} \leq 1$, and $0 \leq \cos(x) \leq 1$ on $[0, \frac{\pi}{2}]$ we find that   $\chi_{[0, \frac{\pi}{2}]} \left( 1-\sqrt{\sin(x)} \right)^n\cos(x)$ is a sequence of nonnegative measurable functions. By Corollary 18.11 we find that, 
+      \begin{align*}
+        \sum_{n=0}^{\infty}\int \chi_{[0, \frac{\pi}{2}]} \left( 1-\sqrt{\sin(x)} \right)^n\cos(x)dx &= 
+        \int \chi_{[0, \frac{\pi}{2}]} \sum_{n=0}^{\infty}  \left( 1-\sqrt{\sin(x)} \right)^n\cos(x)dx
+      \end{align*}
+      Now note that $|(1 - \sqrt{\sin(x)})^n| < 1$ on $(0, \frac{\pi}{2})$, which in terms of our integral is an equivalent support. With this fact, we note that the sum is an geometric series an conclude that, 
+      \begin{equation*}
+        \sum_{n=0}^{\infty}\int_{0}^{\frac{\pi}{2}} \left(1 - \sqrt{\sin(x)}\right)^n \cos(x) dx = \int_0^\frac{\pi}{2} \frac{\cos(x)}{\sqrt{\sin(x)}}dx. 
+      \end{equation*}
+      This function however is unbounded, since as $x \to 0$ we have $\frac{1}{\sqrt{\sin(x)}}\to \infty$. Consider the following sequence of nonnegative measurable functions, 
+      \begin{equation*}
+        f_n = \chi_{(\frac{1}{n}, \frac{\pi}{2})} \frac{\cos(x)}{\sqrt{\sin(x)}}
+      \end{equation*}
+      Note that clearly $f_n$ converges pointwise to our desired integrand, with $f_n \leq f_{n + 1}$. By the Monotone Convergence Theorem, it follows that
+      \begin{equation*}
+        \int_{0}^{\frac{\pi}{2}}  \frac{\cos(x)}{\sqrt{\sin(x)}} = \lim_{n \to \infty} \int_{\frac{1}{n}}^\frac{\pi}{2} \frac{\cos(x)}{\sqrt{\sin(x)}} = \lim_{n \to \infty} \left(2\sqrt{\sin\left(\frac{\pi}{2}\right)} - 2\sqrt{\sin\left(\frac{1}{n}\right)} \right) = 2. 
+      \end{equation*}
+      
+  \end{proof}
+
+
+  \vspace*{.15in}
+
+
+
+
+
+  \problem \textbf{Carothers 18.40}  Let $(f_n)$, $(g_n)$, and $g$ be integrable, and suppose $f_n \to f$ almost everywhere, $g_n \to g$ almost everywhere, $\abs{f_n} \leq g_n$ almost everywhere for all $n$, and that $\int g_n \to \int g$.
+  Prove that $f\in L^1$ and $\int f_n \to \int f$.% Hint revise Lebesgue theorem (DCT)       
+    
+  \begin{proof}Let $(f_n)$, $(g_n)$, and $g$ be integrable, and suppose $f_n \to f$ almost everywhere, $g_n \to g$ almost everywhere, $\abs{f_n} \leq g_n$ almost everywhere for all $n$, and that $\int g_n \to \int g$.
+
+    Let $E$ be the set where $g_n \not\to g$, $f_n \not\to f$ and $\abs{f_n} \leq g_n$. Note that $E$ is a union of null sets and is therefore a null set. Define a new sequence $\tilde{g_n} \to \chi_{E^c}g_n$ where $\tilde{g} = \chi_{E^c}g$. Define $\tilde{f_n}$ and $\tilde{f}$ analogously. Note that $|\tilde{f_n}| = \tilde{g_n} = 0$ on $E$ and $|\tilde{f_n}| = |f_n| \leq g_n = \tilde{g_n}$ on $E^c$f and therefore $|\tilde{f_n}| \leq \tilde{g_n}$ everywhere. 
+
+    \begin{align*}
+        |\tilde{f_n}| &\leq \tilde{g_n}\\
+        -\tilde{g_n} \leq &\tilde{f_n} \leq \tilde{g_n}
+      \end{align*}
+
+
+
+       Since $\tilde{f_n} \to \tilde{f}$, and $\tilde{g_n}\to \tilde{g}$ we know 
+      \begin{align*}
+        -\tilde{g} \leq &\tilde{f} \leq \tilde{g} 
+      \end{align*}
+      So we conclude that $\abs{\tilde{f}} \leq \tilde{g}$ a.e so since $g$ is integrable we find that, 
+      \begin{equation*}
+        \int \abs{f} = \int \abs{\tilde{f}}\leq \int \abs{g} = \int g < \infty.
+      \end{equation*}
+      So $f \in L^1$.\\
+
+
+      The following inequalities apply everywhere as a consequence of $\abs{\tilde{f_n}} \leq \tilde{g_n}$. 
+      \begin{align*}
+        -\tilde{g_n} \leq &\tilde{f_n} \leq \tilde{g_n}\\
+         0 \leq &\tilde{g_n} + \tilde{f_n} \leq 2\tilde{g_n},
+      \end{align*}
+        \begin{align*}
+          \tilde{g_n} \geq &-\tilde{f_n} \geq -\tilde{g_n}\\
+          2\tilde{g_n} \geq & \tilde{g_n}- \tilde{f_n} \geq 0.
+        \end{align*}
+        Therefore $(\tilde{g_n} + \tilde{f_n}), (\tilde{g_n} - \tilde{f_n})$ are nonnegative everywhere. By Fatou's lemma,
+        \begin{align*}
+          \int \lim_{n \to \infty} \tilde{g_n} + \int \lim_{n \to \infty} \tilde{f_n} &=  \int \lim_{n \to \infty} (\tilde{g_n} + \tilde{f_n}),\\
+          &\leq \liminf_{n \to \infty} \int (\tilde{g_n} + \tilde{f_n}),\\
+          &= \liminf_{n \to \infty} \int \tilde{g_n} + \int \tilde{f_n},\\
+          &= \liminf_{n \to \infty} \int \tilde{g_n} + \liminf_{n \to \infty} \int \tilde{f_n},\\
+          &= \int \tilde{g} + \liminf_{n \to \infty} \int \tilde{f_n}.
+        \end{align*}
+
+        \begin{align*}
+          \int \lim_{n \to \infty} \tilde{g_n} - \int \lim_{n \to \infty} \tilde{f_n} &=  \int \lim_{n \to \infty} (\tilde{g_n} - \tilde{f_n}),\\
+          &\leq \liminf_{n \to \infty} \int (\tilde{g_n} - \tilde{f_n}),\\
+          &= \liminf_{n \to \infty} \int \tilde{g_n} - \int \tilde{f_n},\\
+          &= \liminf_{n \to \infty} \int \tilde{g_n} - \limsup_{n \to \infty} \int \tilde{f_n},\\
+          &= \int \tilde{g} - \limsup_{n \to \infty} \int \tilde{f_n}.
+        \end{align*}
+        Thus we conclude that $\lim_{n \to \infty} \int \tilde{f_n} = \int \tilde{f}$. Since $\tilde{f_n}$, $\tilde{f}$ and $(f_n)$, $f$ differ on a set of measure zero, we also conclude that $f\in L^1$ and $\int f_n \to \int f$.        
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+  \problem \textbf{Carothers 18.41} Let $(f_n)$,$f$ be integrable, and suppose that $f_n \to f$ almost everywhere. Prove that $\int\abs{f_n - f} \to 0$ if and only if $\int\abs{f_n} \to \int\abs f$.
+  \begin{proof}
+      Suppose $\int\abs{f_n - f} \to 0$. By the reverse triangle inequality,
+      \begin{equation}
+           \abs{\abs{f_n}-\abs{f}}\leq\abs{f_n - f}.
+      \end{equation}
+      Let $\epsilon > 0$ and choose $N$ such that for all $n \geq N$ we have $\int\abs{f_n - f} < \epsilon$, and note that 
+      \begin{equation*}
+        \abs{\int \abs{f_n} - \int \abs{f}} = \abs{\int \abs{f_n} - \abs{f}} \leq \int \abs{\abs{f_n} - \abs{f}} \leq  \int\abs{f_n - f} < \epsilon. 
+      \end{equation*}
+      Hence $\int\abs{f_n} \to \int\abs f$.
+
+  \end{proof}  
+  
+  
+  \begin{proof} Let $(f_n)$,$f$ be integrable, and suppose that $f_n \to f$ almost everywhere. Suppose  $\int\abs{f_n} \to \int\abs f$. Define $g_n = \abs{f_n} + \abs{f}$, and $h_n = \abs{f_n - f}$. We find that $g_n$, $h_n$ are integrable for all $n$.  Note that $h_n \to 0$ a.e and $g_n \to 2\abs{f}$ a.e since $f_n \to f$ a.e
+    .Now we see that since, $(g_n)$ is a sequence of nonnegative measurable functions we find by Fatou's Lemma that
+    \begin{equation*}
+      \int g \leq  \lim_{n \to \infty} \int \abs{f_n} + \abs{f} = 2\int\abs{f} < \infty
+    \end{equation*}
+    Therefore $g$ is integrable. Now note that $\abs{h_n} = \abs{\abs{f_n - f}} \leq \abs{f_n} + \abs{f} = g_n$.   
+    We also know that $\int g_n \to \int g$ since, 
+    \begin{equation*}
+      \lim_{n \to \infty} \int g_n = \lim_{n \to \infty} \int \abs{f_n} + \abs{f} = \lim_{n \to \infty} \int \abs{f_n} + \lim_{n \to \infty} \int \abs{f} =  2\int\abs{f} = \int g.
+    \end{equation*}
+    Having satisfied the hypothesis for problem 18.40 it follows that $\int h_n \to \int h$ and therefore $\int\abs{f_n - f} \to 0$
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+  \problem \textbf{Carothers 18.55} Prove the Riemann-Lebesgue Lemma: If $f$ is integrable on $\RR$, then $f(x)\cos(nx)$ is integrable and $\lim_{n \to \infty} \int f(x) \cos(nx) dx = 0$. The same is true with $\sin(nx)$ instead of $\cos(nx)$.% Hint: firstly try f = \chi_[a,b]   
+      \begin{proof} Let $f$ be integrable on $\RR$. Note that since $|\cos{nx}| \leq 1$ for all $n$ it also follows that, 
+        \begin{equation*}
+          \int \abs{f(x)\cos(nx)} = \int \abs{f(x)}\abs{\cos{n(x)}} = \int \abs{f(x)}\abs{\cos{n(x)}} \leq \int \abs{f(x)} < \infty
+        \end{equation*}
+        for all $n$. Therefore $f(x)\cos(nx)$ is integrable.\\
+
+
+        Consider the case where $f = \chi[a, b]$, and note that,
+        \begin{equation*}
+          \lim_{n \to \infty} \int \chi_{[a, b]} \cos(nx) dx = \lim_{n \to \infty} \int_a^b \cos(nx) dx = \lim_{n \to \infty} \frac{1}{n}\left(\sin(nb) - \sin(na)\right) \to 0.
+        \end{equation*}
+
+        Recall that step function has finite step partition $\mathcal{P}$ and can be represented by the following sum, where $a_p <\infty $ is the value along $p \in \mathcal{P}$, 
+        \begin{equation*}
+          h = \sum_{p \in \mathcal{P}} \chi_{p} a_p. 
+        \end{equation*}
+        Considering the case where $f = h$ we find, 
+        \begin{equation*}
+          \lim_{n \to \infty} \int \sum_{p \in \mathcal{P}} \chi_{p} a_p \cos(nx) dx = \lim_{n \to \infty} \sum_{p \in \mathcal{P}} a_p \int \chi_{p} \cos(nx) dx \to 0.
+        \end{equation*}
+        A finite sum of integrals which converge to zero, clearly converges to zero. 
+
+
+        Finally to the main result, recall that $f$ is an integrable function on $\RR$ and let $\epsilon > 0$. By Theorem 18.27 there exists an integrable step function $h$ such that $\int \abs{f - h} < \epsilon$. Choose $N$ such that for all $n \geq N$ we have $\int h\cos(nx) < \epsilon$.  Now note that, 
+        \begin{align*}
+          \abs{\int f(x)\cos(nx) dx} &= \abs{\int f(x)\cos(nx) - h(x)\cos(nx) + h(x)\cos(nx)dx}\\
+          &= \abs{\int (f(x)- h(x))\cos(nx) + \int h(x)\cos(nx)dx}\\ 
+          &\leq \abs{\int (f(x)- h(x))\cos(nx)} + \abs{\int h(x)\cos(nx)dx}\\
+          &< \int \abs{(f(x)- h(x))}\cos(nx) + \epsilon\\
+          &< 2\epsilon. 
+        \end{align*} 
+
+
+
+
+
+
+      \end{proof}
+  \vspace*{.15in}
+
+
+
+  \problem   For $t \in \RR$ and $f\in L^1$, let $f_{t}(x) = f(x-t)$. Show that $f_{t}(x) \in L^1$  and that the map $t  \to f_{t}$  is continuous from $\RR$ to $L^1$.
+  
+  \begin{proof} Suppose $t\in \RR$ and $f\in L^1$. Note that by Theorem 18.27 there is a continuous function $g: \RR \to \RR$ such that $g = 0$ outside of an interval $[a, b]$ and $\int|g - f| < \epsilon$. Note that $g$ is a continuous function on compact support and is therefore uniformly continuous. Note that by translation invariance we also have $\int \abs{g_t - f_t} < \epsilon$ for all $t$.\\
+
+    Let $\epsilon > 0$, and consider a $\delta > 0$ such that if $\abs{x - y} < \delta$ then $\abs{g(x) - g(y)} < \frac{\epsilon}{b - a}$. Now note that by triangle inequality we get, 
+    \begin{align*}
+      \norm{f_x - f_y}{L^1} &\leq \norm{f_x - g_x}{L_1} + \norm{g_x - g_y}{L_1} + \norm{g_y - f_y}{L_1},\\
+      &< 2\epsilon + \norm{g_x - g_y}{L_1},
+    \end{align*} 
+    Let $x < y$ and note that, the function $g_x - g_y$ has nonzero support over a region
+    $[a + x, b + y]$ and therefore we get the following,  
+    \begin{equation*}
+      \norm{f_x - f_y}{L^1}  \leq 2\epsilon + ((b + y) - (a + x)) \frac{\epsilon}{(b - a)} =2\epsilon ((b - a) + (y - x)) \frac{\epsilon}{(b - a)} \leq 3\epsilon + \delta\epsilon. 
+    \end{equation*}
+    Clearly $\delta$ can be taken to be less than zero, and hence we have continuity of the map $t  \to f_{t}$ from $\RR$ to $L^1$.
+  \end{proof}
+
+  \vspace*{.15in}
+
+
+
+
+
+
+
+
+
+  \problem \textbf{Carothers 19.23} Let $1< p< \infty$ and let $q$ be defined by $\frac{1}{p}+\frac{1}{q}=1$. If $f\in L^p$, then $\abs{f^{p-1}} \in L^q$ and 
+  \begin{equation*}
+    \norm{\abs{f}^{p-1}}{q} = \norm{f}{p}^{p-1}.
+\end{equation*}
+\begin{proof}Let $1< p< \infty$, where $q$ is defined by $\frac{1}{p}+\frac{1}{q}=1$, and suppose that $f \in L^p$. Consider the following, 
+  \begin{align*}
+    \frac{1}{p}+\frac{1}{q}&=1,\\
+    1+\frac{p}{q}&=p,\\
+    \frac{p}{q}&=p - 1,\\
+    p&=(p - 1)q.
+  \end{align*}
+  Now note that, 
+  \begin{align*}
+    \int |f|^{(p - 1)q} &= \int |f|^p\\
+    \norm{\abs{f}^{p - 1}}{q}^q &=  \norm{f}{p}^p\\
+    \norm{\abs{f}^{p - 1}}{q} &= \norm{f}{p}^{\frac{p}{q}} = \norm{f}{p}^{p - 1}.
+  \end{align*}
+
+\end{proof}
+
+
+
+
+
+
+
+
+
+
+
+\end{problems}
+\end{document}

@@ -1,0 +1,221 @@
+% !TEX TS-program = pdflatexmk
+\documentclass[12pt]{article}
+\usepackage{float}
+
+\usepackage{amsthm}
+
+% Layout.
+\usepackage[top=.75in, bottom=0.75in, left=.75in, right=.75in, headheight=1in, headsep=6pt]{geometry}
+
+\usepackage{fancyhdr, enumerate,multirow}
+% Fonts.
+\usepackage{mathptmx}
+\usepackage[scaled=0.86]{helvet}
+\renewcommand{\emph}[1]{\textsf{\textbf{#1}}}
+
+% Misc packages.
+\usepackage{amsmath,amssymb,latexsym}
+\usepackage{graphicx,tikz}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{tabularx,colortbl}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+%to make tikz pics work
+\usepackage{tikz,pgfplots}
+
+\usepackage{varwidth}
+\usepackage{verbatim}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newenvironment{centerverbatim}{%
+  \par
+  \centering
+  \varwidth{\linewidth}%
+  \verbatim
+}{%
+  \endverbatim
+  \endvarwidth
+  \par
+}
+
+\makeatletter
+\newenvironment{centeredverbatim}{\expandafter\verbatim\centering}{\endverbatim}
+\makeatother
+
+
+\usetikzlibrary{arrows}
+\newcommand{\midarrow}{\tikz \draw[-triangle 90] (0,0) -- +(.1,0);}
+
+\usepackage[colorlinks=true]{hyperref}
+
+% Paragraph spacing
+\parindent 0pt
+\parskip 6pt plus 1pt
+\def\tableindent{\hskip 0.5 in}
+\def\ts{\hskip 1.5 em}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy} 
+\lhead{\large\sf\textbf{MATH 663 }}
+\rhead{\large\sf\textbf{Fall 2023}}
+\chead{\large\sf\textbf{HW 7}}
+
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+\def\heading#1{\localhead{\large\emph{#1}}}
+\def\subheading#1{\localhead{\emph{#1}}}
+
+%% Special Math Symbol shortcuts
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\RR}{\mathbb{R}}
+
+\newcommand{\rad}{\text{rad}}
+\newcommand{\diam}{\text{diam}}
+\newcommand\solution{\localhead{Solution:}}
+
+%\newenvironment{clist}%
+%{\bgroup\parskip 0pt\begin{list}{$\bullet$}{\partopsep 4pt\topsep 0pt\itemsep -2pt}}%
+%{\end{list}\egroup}%
+
+\usetikzlibrary{calc,arrows.meta}
+%\pgfplotsset{my style/.append style={axis x line=middle, axis y line=
+%middle, xlabel={$x$}, ylabel={$y$}, axis equal }}{
+
+
+
+\begin{document}
+\begin{enumerate}
+	\item Prove that for every graph $G$, there exists an order of the vertex set of $G$ such that a greedy algorithm using this ordering will use $\chi(G)$ colors.
+	\begin{proof} Suppose a graph $G$ on $n$ vertices and a coloring $C$ which uses $\chi(G) = k$ colors. Therefore $C$ partitions $G$ into $k$ partite sets, call them $V_1, V_2, \dots, V_k$. Now consider a vertex ordering which traverses the entirety of a partite set one at a time. Note a greedy algorithm would color all vertices in $V_1$ with $1$, since they are independent, and since it is the lowest color available. We also find that the steps of the algorithm which are coloring vertices from $V_m$ where $1 < m \leq k$, the color $m$ is always available since $V_m$ is an independent set of vertices, thus the algorithm will terminate using $k$ colors.  
+	\begin{equation*}
+	\end{equation*}
+	\end{proof}
+	\newpage
+
+
+
+
+
+
+
+
+
+
+
+	\item For every $n \geq 3,$ construct a bipartite graph on $2n$ vertices and an ordering of the vertex set such that the greedy algorithm will use $n$ colors (as opposed to the optimal 2 colors). Give a justification.
+	\begin{proof} Consider bipartite graph $G = (A,B)$ with equally sized partite sets on $2n$ vertices such that a vertex $a_i$ is adjacent to $b_j$ for all $i \neq j$ with $i, j \in [n]$. Now consider the vertex ordering $a_1b_1a_2b_2\dots a_nb_n$. Note a greedy coloring algorithm will have $c(a_1) = c(b_1) = 1$ since $a_1$ and $b_1$ are not adjacent. Now on the $k^{th}$ step of the algorithm, where $1 < k \leq n$ we will find that $c(a_k) = c(b_k) = k$ since $a_k$ is incident to all $b_i$ where $i < k$ which have $c(b_i) = i$ and a similar argument follows or $b_k$. Therefore a greedy algorithm on $G$ with our given vertex sequence will produce an $n$-coloring. 
+ 	\end{proof}
+	\newpage
+	
+	\item A $k$-chromatic graph $G$ is called \emph{critical} if $\chi(G-v) < k$ for every vertex $v \in G.$
+	\begin{enumerate}
+	\item Characterize critical $2$-chromatic graphs.
+	\begin{proof} Firstly all $2$-chromatic graphs are bipartite. For a graph $2$-chromatic graph $G$, with $\chi(G-v) < 2$ it must be the case that $\chi(G-v) = 1$ and therefore $\chi(G-v)$ is class of graphs where each component is a $K_1$. For this to be true for all $v \in G$ it must be the case that $G = K_2$.  
+ 		
+	\end{proof}
+	\item Find an example of a critical $3$-chromatic graph.
+	\begin{proof}
+		A $K_3$ is clearly critically $3$-chromatic. 
+	\end{proof}
+	\item Prove that for $k\geq 3$ every critical $k$-chromatic graph is $(k-1)$-edge-connected.
+	\begin{proof} Let $G$ be a critical $k$-chromatic graph with $k \geq 3$, such that $G$ is not $(k-1)$-edge-connected. Then there exists an edge-cut set $C$ such that $|C| \leq k - 2$. Note that $C$ separates $G$ into two components $A$ and $B$, and since $|A| < |G|$ and $|B| < |G|$, we know that there exists a $(k-1)$-coloring of both $A$ and $B$ call them $c_A()$ and $c_B()$. Now we will show that there exists a permutation of $c_A()$ such that for each $ab \in C$, $c_A(a) \neq c_B(b)$. 
+		
+		This must be possible since the number of total color permutations of $c_A()$ are $(k - 1)!$ and the number of permutations, in which at least one color class is mapped to itself is given by $|C|(k - 2)!$, there are $|C|$ mappings and for each mapping $(k - 2)!$ permutations which fix an element. Therefore since $|C|(k - 2)! \leq (k - 2)(k - 2)! < (k - 1)!$, there must exists $(k-1)$-colorings of $A$ and $B$ such that for every $ab \in C$, $c_A(a) \neq c_B(b)$ and thus we have constructed a $k-1$-coloring of $G$, a contradiction. 
+		
+	\end{proof}
+	\item Characterize the set of critical $3$-chromatic graphs.
+	\begin{proof} Let $G$ be a critical $3$-chromatic graph. By the previous argument it follows that every critical $3$-chromatic graph is $2$-edge connected and therefore must be a cycle. However even cycles are clearly $2$-chromatic so it follows that $G$ is an odd cycle. 
+		
+	\end{proof}
+	\end{enumerate}
+	\newpage
+
+
+
+	\item The \emph{clique number} of a graph, denoted by $\omega(G),$ is the largest $r$ such that $K^r \subseteq G.$ The \emph{independence number} of a graph, denoted by $\alpha(G),$ is the largest $r$ such that $G$ contains an independent set of vertices of cardinality $r.$
+	\begin{enumerate}
+	\item Determine $\omega(G)$ and $\alpha(G)$ for the graphs below. Answers are sufficient. No justification required.
+		\begin{enumerate}
+		\item $P^m$ for $m\geq 1$
+		\solution $\omega(P^m) = 2$ and $\alpha(P^m) = \ceil*{\frac{m}{2}}$\\
+
+		\item $C^k$
+		\solution When $k = 3$ then $\omega(C^k) = 3$ otherwise $\omega(C^k) = 2$. Also $\alpha(C^k) = \floor*{\frac{k}{2}}$.\\
+
+
+
+
+		\item $K_{m,n}$ where $m \leq n$
+		\solution $\omega(K_{m, n}) = 2$ and $\alpha(K_{m, n}) = n$. \\
+		
+
+
+
+
+		\item $K^n$
+		\solution $\omega(K^n) = n$ and $\alpha(K^n) = 1$. 
+
+		\end{enumerate}
+	\item Prove that $\chi(G) \geq \max\{ \omega(G), |G|/\alpha(G)\}.$
+	\begin{proof} Clearly $\chi(G) \geq \omega(G)$ as any $K^{\omega(G)}$ subgraph of $G$ will require at least $\omega(G)$ colors to color. Since any $k$-coloring of $G$ can be thought of as a partition of $G$ by $k$ independent sets, a possible lower bound on the number of independent sets is given by $|G|/\alpha(G)$ and therefore $\chi(G) \geq |G|/\alpha(G)$. 
+	\end{proof}
+	
+
+
+
+
+
+
+	\end{enumerate}
+	\newpage
+	
+
+
+
+	\item Prove or Disprove: Every $k$-chromatic graph $G$ has a $k$-coloring in which some color class has at least $\alpha(G)$ vertices.
+	\begin{proof}
+		Let $G$ be a $k$-chromatic graph and suppose for the sake of contradiction that every $k$-coloring of $G$ has no color class with more than $\alpha(G) - 1$ vertices. Now let $C$ be a $k$-coloring of $G$ and let $A$ be the independent set of vertices of size $\alpha(G)$. Note that since no color class has more than $\alpha(G) - 1$ vertices, $A$ must be partitioned among $2$ or more color classes. Choose two color classes and call them $C_1$ and $C_2$. Now since $C_1$ and $C_2$ are independent we can recolor $C_1 \cup C_2$ a single color and produce a $k - 1$ coloring of $G$, a contradiction.  
+
+
+	\end{proof}
+	\newpage 
+	
+
+
+
+
+
+
+
+
+	
+	\item Assume that $H$ is a $k$-chromatic triangle-free graph and the $G$ is obtained from $H$ by Mycielski's Construction.
+	\begin{enumerate}
+	\item Prove that $G$ is also triangle-free.
+	\begin{proof} Suppose for the sake of contradiction that $G$ has a triangle. Let $V(H)'$ be the copy vertex ste from Mycielski's Contruction and note that since $V(H)'$ is an independent set, no triangles can be formed using $V(H)' \cup \{z\}$. Therefore the triangle in $G$ uses $V(H) \cup V(H)'$ however again since $V(H)'$ is independent and $H$ is triangle free, only one vertex $y_i \in V(H)$ is used in the triangle in $G$. Let $x_j, x_k \in V(H)$ which form a triangle in $G$ with $y_i$ and therefore $x_jx_k \in E(H)$. However by construction $x_j, x_k \in N(x_i)$ and therefore there exists a triangle in $H$ via vertices $x_i, x_j, x_k$. 
+	\end{proof}
+	\item Prove that $G$ is $(k+1)$-colorable.
+	\begin{proof} Let $C$ be a $k$ coloring of $H$. Let $\hat(c)$ be a coloring of $G$ such that $\hat{C}(y_i) = C(x_i)$ and $\hat{C}(z) = k+1$. Clearly $G - z$ is a valid $k$-coloring since $V(H)'$ are independent and $N(x_i) = N(y_i)$ by construction if $x_i$ has no neighbors of the same color, then neither will $y_i$. Since $G-z$ is colored using only $k$-colors, we can color $z$ with the $(k + 1)^{th}$ color.
+	\end{proof}
+	\end{enumerate}
+	\newpage
+	
+	
+	
+	
+	\item Describe the topic of your project and what source(s) you have found.\\ \\
+	For my project  I would like to discuss a varying family of flow problems such as the transportation problem, assignment problem, and shortest path problem, both in the graph framework, and the linear programming framework. Discussion of the primal-dual relationship of the max-flow min-cut problem through the lens of linear programming could also be interesting. I could also talk about the Network Simplex method, which is an algorithm for solving flow problems adapted from a more general purpose linear programming algorithm that uses ideas about spanning trees to be substantially more performant. 
+
+	Finally I have also thought briefly about very fun, application of these graph flow problems in image segmentation. The tool in question is called lazy snapping and I've linked a paper below about how it works. Big picture you just turn your image into a graph, have the user select a couple pixels for the source (subject) and the since (background) and then run a graph cut algorithm to identify the boundary. \\ \\
+
+	
+	\textbf{Sources:}\\
+	Linear and Nonlinear Optimization, Griva, Nash \& Sofer \\
+	\url{http://home.cse.ust.hk/~cktang/sample_pub/lazy_snapping.pdf}
+
+
+\end{enumerate}
+\end{document}

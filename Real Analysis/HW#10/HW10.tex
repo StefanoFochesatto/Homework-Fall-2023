@@ -1,0 +1,578 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\FF}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\BB}{\mathcal{B}}
+
+
+\newcommand{\QQ}{\ensuremath{\mathbb Q}}
+
+
+
+\let\latexchi\chi
+\makeatletter
+\renewcommand\chi{\@ifnextchar_\sub@chi\latexchi}
+\newcommand{\sub@chi}[2]{% #1 is _, #2 is the subscript
+  \@ifnextchar^{\subsup@chi{#2}}{\latexchi^{}_{#2}}%
+}
+\newcommand{\subsup@chi}[3]{% #1 is the subscript, #2 is ^, #3 is the superscript
+\latexchi_{#1}^{#3}%
+}
+\makeatother
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework \#10}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+
+
+
+\begin{problems}
+
+
+  \problem \textbf{Carothers 16.40} If $A$ and $B$ are measurable sets, show that $m (A \cup B) + m (A \cap B) = m (A) +m(B)$
+  \begin{proof} Since $A$ and $B$ are measurable sets by CC it follows that,
+    \begin{equation*}
+      m(A\cap B) + m(A^c \cap B) = m(B),
+    \end{equation*}
+    \begin{equation*}
+      m(B\cap A) + m(B^c \cap A) = m(A).
+    \end{equation*}
+    Adding both equalities we get, 
+    \begin{equation*}
+      m(A\cap B)+m(B\cap A) + m(A^c \cap B)  + m(B^c \cap A) = m(B) + m(A).
+    \end{equation*}
+    Since $A \cup B = (B\cap A)\cup(A^c \cap B)\cap(B^c \cap A)$, a finite union of disjoint sets and by finite additivity we find that,  $m(A \cup B )= m(B\cap A)+m(A^c \cap B)+m(B^c \cap A)$. So by substitution we get, 
+    \begin{equation*}
+      m(A\cap B)+ m(A \cup B) = m(B) + m(A).
+    \end{equation*}
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+  \problem \textbf{Carothers 16.42}  Suppose $E$ is measurable with $m(E ) = 1$. Show that:
+  \begin{enumerate}
+    \item[\textbf{(a)}] There is a measurable set $F \subset E $ such that $m(F )= \frac{1}{2}$.[Hint: Consider the function $f(x) = m(E \cap (-\infty, x])$]  
+    
+    \begin{proof} Consider $f(x) = m(E \cap (-\infty, x])$ and let $x, y \in \RR$ where without loss of generality $y < x$, and note that by finite additivity and monotonicity the following holds, 
+      \begin{align*}
+        \abs{f(x) - f(y)} &= \abs{m(E \cap (-\infty, x)) - m(E \cap (-\infty, y))}\\
+        &= \abs{ m(E \cap (-\infty, y)) + m(E \cap (y, x)) - m(E \cap (-\infty, y))}\\
+        &= \abs{m(E \cap (y, x))} \leq \abs{m((y, x))} = \abs{x - y}.
+      \end{align*}
+      Thus $f$ is Lipschitz and therefore continuous.
+      Now note that $E_n = E \cap (-\infty, n]$ is an increasing sequence of measurable sets with $E_n \subseteq E_{n +1}$, by continuity from below it follows that, 
+      \begin{multline*}
+        \lim_{n \to \infty} f(n) = \lim_{n \to \infty} m(E \cap (-\infty, n]) = \\ m\left(\bigcup_{n = 1}^\infty  E \cap(-\infty, n]\right) 
+        = m\left( E \cap\left(\bigcup_{n = 1}^\infty(-\infty, n]\right)\right) =  m(E) = 1. 
+      \end{multline*}
+
+      Similarly we find that $E_n = E \cap (-\infty, -n]$ is a decreasing sequence of measurable sets with $E_{n+1} \subseteq E_{n}$ and $E_1 < \infty$, so by continuity from above we find,
+      \begin{equation*}
+        \lim_{n \to \infty} f(-n) = \lim_{n \to \infty} m(E \cap (-\infty, -n]) = m\left(\bigcap_{n = 1}^\infty E \cap  (-\infty, -n]\right) = 0.
+      \end{equation*}
+      So there exists $x \in \RR$ for which $f(x)$ is arbitrarily close to 0 or 1. By the Intermediate Value Theorem there must exists some $x \in \RR$ such that $f(x) = \frac{1}{2}$. 
+    \end{proof}
+  \vspace*{.15in}
+
+    \item[\textbf{(b)}] There is a closed set $F $ consisting entirely of irrationals, such that $F \subset E $ and $m(F) = \frac{1}{2}$.  
+    \begin{proof} First note that by finite additivity we get the following, 
+      \begin{equation*}
+        m(E) = m(E \cap \QQ) + m(E \cap \QQ^c). 
+      \end{equation*}
+      Since $ m(E \cap \QQ)$ has measure zero, $m(E) =  m(E \cap \QQ^c) = 1$. Since $(E \cap \QQ^c)$ is measurable there exists a closed and measurable set $F \subset (E \cap \QQ^c) $ such that $m(F) = \frac{3}{4}$. By the previous argument the function $f'(x) = m(F \cap (-\infty, x])$ is continuous, and by the IVT (the upper bound will be arbitrarily close to $\frac{3}{4}$ from below and zero from above) also contains a value $x \in \RR$ for which $f'(x) = m(F \cap (-\infty, x]) = \frac{1}{2}$. Note for such an $x$, $F \cap (-\infty, x]$ is closed and consists entirely of irrationals. 
+  \end{proof}
+  \vspace*{.15in}
+
+
+  % Find a way to intersect the set of 
+  \item[\textbf{(c)}] There is a compact set $F'$ with empty interior such that $F' \subset E $ and $m(F') = \frac{1}{2}$.  
+  \begin{proof} Fix $y \in \RR$ such that $f'(y) > \frac{1}{2}$. Then consider the function $g(x) = f'(y) - f'(x)$, on the domain $x \leq y$. Clearly this function is continuous, since $f'$ is continuous. By finite additivity we get that for any $x \leq y$, 
+    \begin{equation*}
+      g(x) = f'(y) - f'(x) = m(F \cap (-\infty, y]) - m(F \cap (-\infty, x]) = m(F \cap (x, y]).
+    \end{equation*} 
+    Note that when $x = y$ clearly $g(y) = 0$ and, 
+    \begin{equation*}
+      \lim_{x \to -\infty} g(x) = f'(y) - \lim_{x \to -\infty} f'(x) > \frac{1}{2}.
+    \end{equation*}
+    So by the Intermediate Value Theorem there exists an $x, y \in \RR$ such that $m(F \cap (x, y]) = \frac{1}{2}$. Further it follows that $m(F \cap [x, y]) = \frac{1}{2}$ and since $F \cap [x, y]$ is closed and bounded, it is also compact and since $F$ had an empty interior so does $F \cap [x, y]$. 
+  \end{proof}
+
+  \end{enumerate} 
+  \vspace*{.15in}
+
+
+
+
+
+
+  \problem \textbf{Carothers 16.44} Let $E$ be a measurable set with $m(E) > 0$. Prove that $E - E = \{x - y: x, y \in E\}$ contains an interval centered at $0$. 
+
+  \begin{proof} Let $E$ be a measurable set and suppose $m(E) > 0$. Let $\alpha = \frac{3}{4}$, and note that by a previous homework there exists an open interval $I$ such that $m(E \cap I) > \alpha m(I)$. Now choose an $x \in \RR$ such that $\abs{x} < m(I)/2$ and it follows that $m(I \cup (I+x)) \leq 3m(I)/2$. This is clear since translation by at just below half the length of $I$ ensures that $m(I \cap (I + x)) > \frac{1}{2}$ and by inclusion-exclusion and finite additivity $m(I \cup (I+x)) \leq 3m(I)/2$. 
+    
+    Now suppose for the sake of contradiction that $E \cap I$ and $(E \cap I) + x$ are disjoint, then let $A = (E \cap I)\cup ((E\cap I) + x)$ by finite additivity and translation invariance it would follow that $m(A) = 2m(E \cap I)$ and so $m(A) > \frac{3}{2}m(I)$. Note that $A = (E \cap I)\cup ((E\cap I) + x) = (E \cap I)\cup ((E + x \cap I + x))$ and so clearly $A \subseteq (I \cup (I + x))$ and by monotonicity a contradiction would follow,
+    \begin{equation*} 
+      \frac{3}{2}m(I) < m(A) \leq m(I \cup (I + x))\leq \frac{3}{2}m(I).
+    \end{equation*}
+     Hence $E \cap I$ and $(E \cap I) + x$ are not disjoint. Moreover, since set intersection is commutative we find that, 
+    \begin{align*}
+      (E \cap I) \cap ((E \cap I) + x) &\neq \emptyset,\\
+      (E \cap I) \cap ((E + x) \cap (I+ x)) &\neq \emptyset,\\
+      (E \cap E + x) \cap (I \cap I+ x) &\neq \emptyset.
+    \end{align*}
+    Which implies that $(E \cap E + x) \neq \emptyset$ and further that $x \in E - E$. Since $x$ was chosen such that $\abs{x} < m(I)/2$ we conclude that $(-m(I)/2, m(I)/2) \subset E -E$. 
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+
+  \problem \textbf{Carothers 16.45} Let $f: X \to Y$ be any function. 
+  \begin{enumerate}
+    \item[\text{(a)}] If $\mathcal{B}$ is a $\sigma$-algebra of subsets of $Y$, show that $\mathcal{A} = \{f^{-1}(B):B \in \mathcal{B}\}$ is a $\sigma$-algebra of subsets of $X$. 
+     
+    \begin{proof} We must show that $\mathcal{A}$ is closed with respect to compliments, finite unions and countable unions. Let $U \in \A$ and note that by definition there exists some $B \in \BB$ such that $U = f^{-1}(B)$. Now note $U^c = (f^{-1}(B))^c = f^{-1}(B^c)$. Since $\BB$ is a $\sigma$-algebra, $B^c \in \BB$ and therefore $U^c \in \A$. 
+
+    Let $\{U_i\} \subset \A$ be a countable or finite collection, note again that by definition there exists some $B_i \in \BB$ such that  $U_i = f^{-1}(B_i)$. Therefore $\cup U_i = \cup f^{-1}(B_i) = f^{-1}\left(\cup B_i\right)$. Since $\BB$ is a $\sigma$-algebra, $\cup B_i \in \BB$ and therefore $\cup U_i \in \A$.  
+    \end{proof}
+  \vspace*{.15in}
+
+
+
+    \item[\text{(b)}] If $\mathcal{A}$ is a $\sigma$-algebra of subsets of $X$, show that $\mathcal{B} = \{ B : f^{-1}(B) \in \mathcal{A}\}$ is a $\sigma$-algebra of subsets of $Y$.  
+    \begin{proof} We must show that $\BB$ is closed with respect to compliments, finite unions and countable unions. Let $U \in \BB$ and note that by definition $f^{-1}(U) \in \A$. Note that $f^{-1}(U^c) = f^{-1}(U)^c \in \A$ since $\A$ is a $\sigma$-algebra. Hence $U^c \in \BB$. 
+
+      Let $\{U_i\} \subset \BB$ be a countable or finite collection, and again note that for each $i$, $f^{-1}(U_i) \in \A$. Now it follows that 
+
+    \end{proof}
+
+  
+  
+  
+  \end{enumerate}
+  \vspace*{.15in}
+
+
+
+
+
+  \problem \textbf{Carothers 16.53} Show that $\mathcal{B}$ is generated by each of the following: 
+  \begin{enumerate}
+    \item[\textbf{(a)}] The open interval $\mathcal{E}_1 = \{(a, b): a < b\}$      
+      %Clearly $\mathcal{E}_1 \subseteq \mathcal{B }$, so it follows that $\sigma(\mathcal{E}_1) \subseteq \sigma(\mathcal{B}) = \mathcal{B}$. so now we aim to prove that $\mathcal{E}_1 \supseteq \mathcal{B}$ and conclude analogusly. Consider $\mathcal{E} \subseteq \mathcal{E}_1$ where $a, b \in \Rats$. Now we will show that $\mathcal{E}$ forms a basis for the open sets of $\RR$. Let $U \in \mathcal{B}$, with $u \in U$. Since $U$ is open there exists an neighborhood about $u$, $(a, b)$. By completeness there exists $(c, d) \subseteq (a, b)$ such that $c, d \in \QQ$. Therefore  
+
+    
+
+
+
+
+
+
+
+    \item[\textbf{(b)}] The closed intervals $\mathcal{E}_2 = \{[a, b]: a < b\}$
+    \item[\textbf{(c)}] The half-open interval $\mathcal{E}_3 = \{(a, b], [a, b) : a < b\}$  
+    \item[\textbf{(d)}] The open rays $\mathcal{E}_4 = \{(a, \infty), (-\infty, b): a, b \in \RR\}$
+    \item[\textbf{(e)}] The closed rays $\mathcal{E}_5 = \{[a, \infty), (-\infty, b]: a, b \in \RR\}$    
+    \begin{proof} First we will show that $\mathcal{B} = \sigma(\mathcal{E }_1)$. Note that all the elements of $\mathcal{E }_1$ are open sets and therefore $\mathcal{E}_1 \subseteq \mathcal{B }$ and therefore $\sigma(\mathcal{E }_1) \subseteq \mathcal{B}$. Recall that $\mathcal{B_1}$ forms a topological basis for the open sets of $\RR$ and therefore every open set $U \in \sigma(\mathcal{E}_1)$, moreover since $\mathcal{B}$ is the smallest $\sigma$-algebra containing the open sets it follows that $\mathcal{B} \subseteq \mathcal{E}_1$. So we conclude that $\mathcal{B } = \sigma(\mathcal{E }_1)$. 
+
+      Now we will demonstrate that $\mathcal{E}_1 \subset \sigma(\mathcal{E }_i)$ for $i = 2, 3, 4, 5$. Let $(a, b)\in \mathcal{E }_1$, and consider the following constructions to show:
+      \begin{equation*}
+        \mathcal{E}_1 \subset \sigma(\mathcal{E }_2), \qquad (a, b) = \bigcup_{n = 1}^\infty \left[a + \frac{1}{n}, b - \frac{1}{n}\right]
+      \end{equation*}
+      \begin{equation*}
+        \mathcal{E}_1 \subset \sigma(\mathcal{E }_3), \qquad (a, b) = (a, b] \cap [a, b)
+      \end{equation*}
+  
+      \begin{equation*}
+        \mathcal{E}_1 \subset \sigma(\mathcal{E }_4), \qquad (a, b) = (a, \infty] \cap [-\infty, b)
+      \end{equation*}
+  
+      \begin{equation*}
+        \mathcal{E}_1 \subset \sigma(\mathcal{E }_5), \qquad (a, b) = \bigcup_{n = 1}^\infty \left[a + \frac{1}{n}, \infty\right) \cap \left(-\infty, b - \frac{1}{n}\right]
+      \end{equation*}
+      So since $\mathcal{E}_1 \subset \sigma(\mathcal{E }_i)$ it follows that $
+      \sigma(\mathcal{E}_1) \subseteq \sigma(\mathcal{E }_i)$
+
+      It's clear that each generating set $\mathcal{E}_i \subseteq \mathcal{B}$, so it follows that $\sigma(\mathcal{E}_i) \subseteq \mathcal{B}$. Since $\mathcal{B} = \sigma(\mathcal{E }_1)$ and   $\sigma(\mathcal{E}_1) \subseteq \sigma(\mathcal{E }_i)$ it follows that, 
+      \begin{equation*}
+         \mathcal{B} = \sigma(\mathcal{E}_1) \subseteq \sigma(\mathcal{E }_2) \subseteq \sigma(\mathcal{E }_3) \subseteq \sigma(\mathcal{E }_4) \subseteq \sigma(\mathcal{E }_5) \subseteq \mathcal{B}
+      \end{equation*}
+
+
+
+
+
+
+
+
+
+
+    \end{proof}
+  \end{enumerate}
+
+  \vspace*{.15in}
+
+
+
+  \problem \textbf{Carothers 16.58} Suppose that $m(E) < \infty$. Prove that $E $  is measurable if and only if, for every $\epsilon > 0$, there is a finite union of bounded intervals $A $ such that $m(E \triangle A) < \epsilon$ (where $E \triangle A$ is the symmetric difference of $E$ and $A$).  
+  \begin{proof} Let $m(E) < \infty$, and suppose $E$ is measurable. Let $\epsilon > 0$ and let $\{I_i\}$ be a measuring cover of $E$ such that, 
+    \begin{equation*}
+      \sum_{i = 1}^{\infty}\ell(I_i) < m^*(E) + \epsilon
+    \end{equation*} 
+    Choose $N$ such that $\sum_{N+1}^{\infty} \ell(I_i) < \epsilon$. Let $A = \cup_{i = 1}^N I_i$, note that since $  \sum_{i = 1}^{\infty}\ell(I_i)$ it is also the case that each $I_i$ is bounded. Also let $U = \cup_{i = 1}^\infty I_i$. Note that $U \setminus A = \cup_{i = N + 1}^\infty I_i$, therefore it follows that, 
+    \begin{equation*}
+      m(U \setminus A) \leq m(\cup_{i = 1}^N I_i) \leq  \sum_{N+1}^{\infty} \ell(I_i) < \epsilon. 
+    \end{equation*}
+    Since $E \subseteq U$ it follows that $E \setminus A \subset U \setminus A$ and by monotonicity, 
+    \begin{equation*}
+      m(E \setminus A) \leq m(U \setminus A) < \epsilon.
+    \end{equation*}
+    Note that since $m(U) \leq \sum_{i = 1}^{\infty}\ell(I_i) < m(E) + \epsilon$, and $E$ is measurable we find that, 
+    \begin{align*}
+      m(U) &= m(U \cap E^c) + m(U \cap E),\\
+      m(U) - m(U \cap E) &= m(U \cap E^c),\\
+      m(U) - m(E) &= m(U \cap E^c).
+    \end{align*}
+    So it follows that $m(U \setminus E) < \epsilon$. Since $A \subseteq U$ it follows that $A \setminus E \subseteq U \setminus E$ and therefore by monotonicity, 
+    \begin{equation*}
+      m(A \setminus E ) \leq m(U \setminus E) < \epsilon.
+    \end{equation*}
+    Since $E \triangle A = A\setminus E \cup E \setminus A$, by subadditivity, 
+    \begin{equation*}
+      m(E \triangle A) \leq  m(A \setminus E ) +  m(E \setminus A) < 2 \epsilon. 
+    \end{equation*}
+  \end{proof}
+
+
+\begin{proof} Let $m^*(E) < \infty$ and suppose that for every $\epsilon > 0$, there is a finite union of bounded intervals $A$ such that $m^*(E \triangle A) < \epsilon$. Since $(A \setminus E),(E \setminus A) \subseteq E \triangle A$ it follows that $m^*(E \setminus A) < \epsilon$ and $m^*(A\setminus E) < \epsilon$. Now there exists an open set $U$ such that $U \supseteq E\setminus A$ and 
+  \begin{equation*}
+    m^*(U) < m^*(E \setminus A) + \epsilon. 
+  \end{equation*}
+  Now define $U' = A \cup U$ and note that $U'$ is open and $E \subseteq U'$. Now note that
+  \begin{align*}
+    m^*(U'\setminus E) = m^*((A \cup U) \cap E^c) = m^*((A\cap E^c) \cup (U\cap E^c) ).
+  \end{align*}
+  By subadditivity we get that, 
+  \begin{align*}
+    m^*(U'\setminus E) &\leq m^*((A\cap E^c)) +  m^*(U\cap E^c)\\
+     &= m^*(A\setminus E) +  m^*(U\setminus E)
+  \end{align*}
+  Since $(U\setminus E) \subseteq U$ by monotonicity it follows that 
+  \begin{equation*}
+    m^*(U'\setminus E) \leq m^*(A\setminus E) + m^*(U).
+  \end{equation*}
+  Now it follows that since $ m^*(U) < m^*(E \setminus A) + \epsilon$, $m^*(E \setminus A) < \epsilon$, and $m^*(A\setminus E) < \epsilon$
+  \begin{equation*}
+    m^*(U'\setminus E) < 3 \epsilon.
+  \end{equation*}
+
+
+
+
+
+\end{proof}
+  \vspace*{.15in}
+
+
+
+
+  % Construct a closed set on the interior, within epsilon $F$, $m^*(F) > m^(E) - \epsilon$. Consider the limit of $F \cap [-n, -n] < \epsilon$ since continuity from below gets us some N within \frac{\epsilon}{2} and this new set is closed and bounded and therefore compact on the inside of E. 
+   \problem \textbf{Carothers 16.64} Prove Corollary 16.26: Suppose that $m^*(E) < \infty$. Then, $E$ is measurable if and only if, for every $\epsilon > 0$, there exists a compact set $F \subset E$ such that $m(F) > m^*(E) - \epsilon$. 
+  \begin{proof} Let $m^*(E) < \infty$ and suppose that $E$ is measurable. Let $\epsilon > 0$ and note that by Problem 8 there exists a closed set $F \subseteq E$ such that $m^*(E \setminus F) < \frac{\epsilon}{2}$. Since $F$ is closed and therefore measurable by CC, monotonicity, and our previous result we find that, 
+    \begin{align*}
+      m(E) = m(E \cap F) + m(E \cap F^c),\\
+      m(E) < m(F) + \frac{\epsilon}{2},\\
+      m(E) - \frac{\epsilon}{2} < m(F).
+     \end{align*}
+  Now consider the following collection of increasing measurable sets, ${F \cap [n, n]}_{n = 1}^\infty$. By continuity from below we know that, 
+    \begin{equation*}
+      \lim_{n \to \infty} m(F \cap [n, n]) = m(\cup_{n = 1}^\infty F \cap [n, n]) = m(F). 
+    \end{equation*}
+    Therefore there exists some $N$ such that  $m(F \cap [N, N]) > m(F) - \frac{\epsilon}{2}$. Now it follows that, 
+    \begin{equation*}
+      m(F \cap [N, N]) > m(F) - \frac{\epsilon}{2} > m(E) - \epsilon.
+    \end{equation*}
+    Note that $F \cap [N, N]$ is closed and bounded and therefore compact. 
+  \end{proof}
+  
+
+
+  \begin{lemma}{1}
+    Let $E \subseteq \RR$ be a set, then if for every $\epsilon > 0$ there is a closed set $V \subseteq E$ such that $m^*(E \setminus V) < \epsilon$, then $E$ is measurable. 
+    \begin{proof} Let $E \subseteq \RR$ be a set, then suppose that for every $\epsilon > 0$ there is a closed set $V \subseteq E$ such that $m^*(E \setminus V) < \epsilon$. Note that equivalently for every $\epsilon$ there exists an open set $V^c \supseteq E^c$ such that $m^*(V^c \setminus E^c) = m^*(V^c \cap (E^c)^c) = m^*(V^c \cap E) = m^*(E \cap V^c) = m^*(E \setminus V) < \epsilon$. So we consclude that $E^c$ is measureable, and since the measerable sets form a $\sigma$-algebra $E$ is also measerable. 
+   \end{proof}
+  \end{lemma}
+
+
+  \begin{proof}Let $m^*(E) < \infty$ and suppose that for every $\epsilon > 0$ there exists a compact set $F \subset E$ such that $m(F) > m^*(E) - \epsilon$. Let $\epsilon > 0$, and consider a compact set $F \subset E$ such that $m(F) > m^*(E) - \epsilon$. Note $F$ is compact in $\RR$ and therefore closed, bounded and measurable. By CC and since $m^*(E \cap F) \leq m^*(E) < \infty$ we find that, 
+    \begin{align*}
+      m^*(E) &= m^*(E \cap F) + m^*(E \cap F^c),\\
+      m^*(E) - m^*(E \cap F) &= m^*(E \setminus F).
+    \end{align*}
+    Since $F \subseteq E$ it follows that, 
+    \begin{equation*}
+      m^*(E) - m(F) = m^*(E \setminus F).
+    \end{equation*}
+    So finally we can conclude that
+    \begin{equation*}
+      m^*(E \setminus F) = m^*(E) - m(F) < \epsilon. 
+    \end{equation*}
+
+ 
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+
+
+  \problem Suppose $E \subseteq \RR$. Prove that $E $ is measurable if and only if for any $\epsilon > 0$ there is an opens set $G $ and a closed set $F $ such that $ F \subseteq E \subseteq G $  and $m^*(G\setminus F  ) < \epsilon$.  
+  \begin{proof} Let $E \subseteq \RR$ and suppose that $E$ is measurable. Let $\epsilon > 0$, and recall that if $E$ is measurable then there exists an open set $G$ such that $E \subseteq G$ and $m^*(G \setminus E) < \epsilon$. Note that $E^c$ is also measurable since measurable sets form a $\sigma$-algebra. It follows that there exists an open set $U$, with $E^c \subseteq U$ with $m^*(U \setminus E^c) < \epsilon$. Let $F = U^c$ a closed set, and note that since $U \subseteq E^c$ we know $F = U^c \supseteq E$. Finally note that $m^*(E \setminus F) = m^*(E \setminus U^c) = m^*(E \cap U)  = m^*(U\cap (E^c)^c) = m^*(U \setminus E^c) < \epsilon$.  
+
+    Therefore there exists a closed set $F$ and an open set $G$ such that $ F \subseteq E \subseteq G $ and $m^*(G \setminus E) < \epsilon$ and $m^*(E \setminus F) < \epsilon$. Now note that $G \setminus F \subseteq (G \setminus E) \cup (E \setminus F)$, and therefore by subadditivity we conclude that, 
+    \begin{equation*}
+      m^*(G\setminus F) \leq m^*(E \setminus F) + m^*(G \setminus E)  < 2\epsilon.
+    \end{equation*}
+  \end{proof}
+
+
+
+  \begin{proof}Let $E \subseteq \RR$ and suppose that for any $\epsilon > 0$ there is an opens set $G $ and a closed set $F $ such that $ F \subseteq E \subseteq G $  and $m^*(G\setminus F  ) < \epsilon$.  Since $G\setminus F \supseteq G \setminus E$ it follows by subadditivity that, 
+    \begin{equation*}
+      m^*( G \setminus E) \leq m^*(G\setminus F  ) < \epsilon.
+    \end{equation*}
+    
+  \end{proof}
+
+
+
+  
+  \vspace*{.15in}
+
+
+
+
+
+
+  \problem \textbf{Carothers 16.73} If $E$ is a measurable subset of a nonmeasurable set $N$ (constructed in this section), prove $m(E) = 0$. [ Hint: Consider $E_r = E + r (\mod 1),$ for $r \in \QQ \cap [0, 1).$]
+  \begin{proof} Suppose $E$ is a measurable subset of a nonmeasurable set $N$. Let $E_r = E + r (\mod 1),$ for $r \in \QQ \cap [0, 1)$ and note by translation invariance we find that $m(E) = m(E_r)$. We now claim that $E_r$ are disjoint, we have shown in class that the analogously defined $N_r$ are disjoint, and since $E \subseteq N$ it follows that $E_r \subseteq N_r$ for all $r \in \QQ \cap [0, 1)$, and therefore $E_r$ are disjoint. Now by countable additivity, and monotonicity
+    \begin{equation*}
+       m(\cup E_r) = \sum_{r \in \QQ \cap [0, 1)} m(E_r) \leq m([0, 1)).
+    \end{equation*}
+    Clearly it follows that if $m(E) \neq 0$ then $ m(\cup E_r) = \sum_{r \in \QQ \cap [0, 1)} m(E_r) = \infty \not\leq m([0, 1))$. So it must be the case that $m(E) = 0$.
+    \end{proof}
+  \vspace*{.15in}
+
+
+
+
+  \problem \textbf{Carothers 16.74} If $m^*(A) > 0,$ show that $A$ contains a nonmeasurable set. [Hint: We must have $m^*(A \cap [n ,n + 1)) > 0$ for some $n \in \Ints$, and so we say suppose that $A \subset [0, 1)$. (How?) it follows from Exercise 73 that one of the sets $E_r = A \cap N_r$ is nonmeasurable. (Why?) ] 
+
+  \begin{proof} Suppose $m^*(A) > 0$ and note that $\cup_{n \in \ZZ} A \cap [n, n + 1) =  A$ so we find by countable subadditivity that, 
+    \begin{equation*}
+      0 < m^*(A) = m^*\left(\bigcup_{n \in \ZZ} A \cap [n, n + 1)\right) \leq \sum_{n \in \ZZ} m^*(A \cap [n, n+1)).  
+    \end{equation*}
+    Therefore there must exist some $n \in \Ints$ such that  $m^*(A \cap [n ,n + 1)) > 0$. Consider a new $A$ to be $(A \cap [n ,n + 1)) - n$ and note that by translation invariance it still holds that $m^*(A) = m^*(A \cap [n ,n + 1)) > 0$ and now we can assume $A \subset [0, 1)$. Now consider the sets $E_r = A \cap N_r$ where $N_r$ are the familiar nonmeaserable sets constructed in class and invoked in the previous problem. Now for the sake of contradiction suppose that all such $E_r$ are measurable. By the previous problem $m(E_r) = 0$ moreover since the collection of $N_r$ are disjoint we know that $E_r$ are disjoint so it follows by countable additivity, 
+    \begin{equation*}
+      m\left(\bigcup_{r \in \QQ \cap [0, 1)} E_r\right) = \sum_{r \in \QQ \cap [0, 1)} m(E_r) = 0.
+    \end{equation*}
+    Further it follows that,
+    \begin{equation*}
+      m\left(\bigcup_{r \in \QQ \cap [0, 1)} E_r\right) = m\left(\bigcup_{r \in \QQ \cap [0, 1)} (A \cap N_r)\right) = m\left(A \cap\left(\bigcup_{r \in \QQ \cap [0, 1)} N_r\right)\right) =m(A \cap [0, 1)) = m(A).    
+    \end{equation*}
+    A contradiction, since $m(A) > 0$. 
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+  \problem \textbf{Carothers 16.75} Measurable sets aren't necessarily preserved by continuous maps, not even sets of measure zero. Here's an old example: Recall that the Cantor function $f: [0, 1] \to [0, 1]$ maps the Cantor set $\Delta$ onto $[0, 1]$. That is, the Cantor function takes a set of measure zero and 'spreads it out' to a set of measure one. Conclude that $f$ maps some measurable set onto a nonmeasurable set. 
+  \solution Since $m(f(\Delta)) = 1$, by the previous result there exists some subset $f(U) \subseteq f(\Delta)$ such that $f(U)$ is a nonmeasurable set. Now it must follow that $U \subseteq \Delta$, and therefore by monotonicity $m^*(U) \leq m^*(\Delta) = 0$, so $U$ is a null set, which are themselves measurable. Hence $f$ maps some measurable set onto a nonmeasurable set.
+  \vspace*{.15in}
+
+
+
+
+
+
+\end{problems}
+\end{document}

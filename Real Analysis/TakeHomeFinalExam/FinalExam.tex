@@ -1,0 +1,605 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage{mathtools}
+\usepackage{soul}
+\usepackage{mathrsfs}
+\usepackage{physics}
+\usepackage{graphicx}
+% \usepackage{wrapfig}
+\usepackage[all,cmtip]{xy}
+\usepackage{changepage}
+\usepackage{stackengine}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\opp}[1]{\operatorname{#1}}
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\PP}{\ensuremath{\mathbb P}}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\def\comment#1{\textcolor{blue}{\texttt{#1}}}
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\ZZ\Ints
+\let\CC\Cplx
+
+
+\doclabel{Math F641: Final}
+\docauthor{Stefano Fochesatto}
+\docdate{Due: \today}
+\begin{document}
+
+\begin{problems}
+\problem \textbf{Carothers 19.3} Prove that $f_n \converges{m} f$ if and only if $(f_n-f)\converges{m} 0$.
+\begin{proof} Let $(f_n), f$ be measurable, real-valued functions such that  $f_n \converges{m} f$. By definition we know that for all $\epsilon > 0$, there exists an $N$ such that for all $n \geq N$ we have, 
+  \begin{equation*}
+    m \left\{\abs{f_n - f} \geq \epsilon \right\} < \epsilon.
+  \end{equation*}
+  Note that since $\abs*{(f_n - f) - 0} = \abs{f_n - f}$ we also have that for all $n\geq N$
+  \begin{equation*}
+    m \left\{\abs{(f_n - f) - 0} \geq \epsilon \right\} < \epsilon.
+  \end{equation*}
+  Hence it follows that $(f_n-f)\converges{m} 0$.
+\end{proof}
+
+\begin{proof} Let $(f_n), f$ be measurable, real-valued functions such that $(f_n-f)\converges{m} 0$. By definition  we know that for all $\epsilon > 0$, there exists an $N$ such that for all $n \geq N$ we have, 
+  \begin{equation*}
+    m \left\{\abs{(f_n - f) - 0} \geq \epsilon \right\} < \epsilon.
+  \end{equation*}
+  Now again since $\abs*{(f_n - f) - 0} = \abs{f_n - f}$ we also have that for all $n\geq N$
+  \begin{equation*}
+    m \left\{\abs{f_n - f} \geq \epsilon \right\} < \epsilon.
+  \end{equation*}
+  Hence it follows that  $f_n\converges{m} f$.
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+
+
+% Dominated Convergence Theorem ?? I forgot how to evaluate limits, seems hard even when we bring the limit inside. 
+\problem Compute $\lim_{n\to\infty}\int_0^\infty\left(1+\frac{x}{n}\right)^{-n}\cos(x/n) dx$.
+\begin{proof} First consider rewriting the limit as, 
+  \begin{equation*}
+    \lim_{n \to \infty}\int \chi_{(0, n)} \left(1+\frac{x}{n}\right)^{-n}\cos(x/n) dx.
+  \end{equation*}
+  Now consider the sequence of functions for $n \geq 2$ which is needed to have the dominating function be in $L_1$,
+  \begin{equation*}
+    f_n = \chi_{(0, n)} \left(1+\frac{x}{n}\right)^{-n}\cos(x/n).
+  \end{equation*}
+  Now fix $n$ and consider the following, 
+  \begin{equation*}
+    \int\abs{f_n} = \int \abs{\chi_{(0, n)} \left(1+\frac{x}{n}\right)^{-n}\cos(x/n)}dx \leq \int \chi_{(0, n)} \abs{\left(1+\frac{x}{n}\right)^{-n}}dx \leq \int_1^n 1 < \infty.
+  \end{equation*}
+  Hence $(f_n) \in L_1$. Now it also follows that the pointwise limit gives, 
+  \begin{equation*} 
+    \lim_{n \to \infty} \chi_{(0, n)} \frac{1}{(1 + \frac{x}{n})^n} \cos(\frac{x}{n}) = \chi_{(0, \infty)} \frac{1}{e^x}(1).
+  \end{equation*}
+  Note that since $\abs{\cos(\frac{x}{n})}\leq 1$ we know that for all $n \geq 2$ it follows that, 
+  \begin{equation*}
+    |f_n| \leq \chi_{[0, \infty]}\left(1+\frac{x}{2}\right)^{-1} = g.
+  \end{equation*}   
+  Now note that $g \in L_1$ since, 
+  \begin{equation*}
+    \int \chi_{[0, \infty]}\left(1+\frac{x}{2}\right)^{-2} dx= \int_0^\infty \left(1+\frac{x}{2}\right)^{-2} = 2
+  \end{equation*}
+  By the Dominated Convergence Theorem we conclude that, 
+  \begin{equation*}
+    \lim_{n \to \infty}\int \chi_{(0, n)} \left(1+\frac{x}{n}\right)^{-n}\cos(x/n) dx = \int  \chi_{(0, \infty)} \frac{1}{e^x} dx = \int_0^\infty e^{-x} = 1
+  \end{equation*}
+
+
+
+
+
+
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+
+
+
+\problem Let $\{f_n\}$ be a sequence of measurable real-valued functions. Let $E=\{x:(f_n(x))\text{ converges}\}$. Show that $E$ is measurable. [Hint: If the sequence does not converge at some $x$, the sequence $(f_n(x))$ is not Cauchy; try to give a description of the places where the sequence is not Cauchy in terms of a countable collection of set operations.]
+\begin{proof} Let $\{f_n\}$ be a sequence of measurable real-valued functions and suppose $E=\{x:(f_n(x))\text{ converges}\}$. Note that $E^c$ can be characterized as the following, 
+  \begin{align*}
+    E^c &= \left\{x : (f_n(x)) \text{ does not converge}\right\}\\
+    E^c &= \left\{x : (f_n(x)) \text{ is not Cauchy}\right\}
+  \end{align*}
+  Now describing everywhere in the domain where $f_n(x)$ is not a Cauchy sequence we consider the following, 
+
+  There exists an $\epsilon > 0$ such that for all $N$, there exists an $n, m \geq N$ such that $|f_n(x) - f_m(x)| > \epsilon$. 
+
+  \begin{equation*}
+    E^c = \bigcup_{k = 1}^\infty \bigcup_{i = 1}^\infty \left\{x : \abs{f_n(x) - f_{m}(x)} > \frac{1}{2^k}, \quad n, m \geq i\right\}
+  \end{equation*}
+  \begin{equation*}
+    E^c = \bigcup_{k = 1}^\infty \bigcup_{i = 1}^\infty \bigcup_{n = i}^\infty \bigcup_{m = n}^\infty \left\{x : \abs{f_n(x) - f_{m}(x)} > \frac{1}{2^k}\right\}
+  \end{equation*}
+  \begin{equation*}
+    E^c = \bigcup_{k = 1}^\infty \bigcup_{i = 1}^\infty \bigcup_{n = i}^\infty \bigcup_{m = n}^\infty \left\{x : -\frac{1}{2^k}> f_n(x) - f_{m}(x) > \frac{1}{2^k}\right\}
+  \end{equation*}
+  Since $(f_n)$ are measurable functions, a difference such as $f_n(x) - f_{m}(x)$ is also measurable, and note that $\left\{x : -\frac{1}{2^k}> f_n(x) - f_{m}(x) > \frac{1}{2^k}\right\}$ describes the intersection of a pre-image of a pair of rays, and is hence measurable. Thus $E^c$ is measurable and by the closure of compliments $E$ is also measurable. 
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+
+
+
+%% Application of Arzela-ascoli. Closed? continuity of the integral, and closedness of lipshitz
+%% boundedness: Lipshitz constant bounds the slopes of things, and the integral is limiting the area underneath the curve.  equicontinuous homework problems. 
+
+%Also equicontinuity and pointwise boundedness maybe.(instead of unifromly bounded.)
+
+\problem Let
+\begin{equation*}
+  X_K=\left\{f\in C([0,1]):f\text{ is Lipschitz with constant $K$ and } \int_0^1|f|\leq 1\right\}.
+\end{equation*}
+Show that $X_K$ is compact in $C([0,1])$. Is $X_K$ also compact in $L^1([0,1])$?
+\begin{proof} We will proceed to show that $X_K$ is compact by apply the Arzela-Ascoli Theorem. 
+  First let $(f_n) \subseteq X_K$ such that $f_n \to f$ with respect to the $C([0, 1])$ infinity-norm, and since each $(f_n)$ is a bounded continuous function we know that such convergence is equivalent to $(f_n) \to f$ uniformly. Since $(f_n) \to f$ uniformly $\int_0^1 f_n \to \int_0^1 f$ and since each $\int_0^1 f_n \leq 1$ it follows that $\int_0^1 f \leq 1$. Note that since $(f_n) \to f$ pointwise we also have that, 
+  \begin{equation*}
+    \frac{\abs{f_n(x) - f_n(y)}}{\abs{x - y}}  \to \frac{\abs{f(x) - f(y)}}{\abs{x - y}}.
+  \end{equation*}
+  Since $\frac{\abs{f_n(x) - f_n(y)}}{\abs{x - y}} \leq K$ holds for all $n$ we find that, 
+  \begin{equation*}
+    \frac{\abs{f(x) - f(y)}}{\abs{x - y}} \leq K.
+  \end{equation*}
+  Hence $X_K$ is closed. \\
+
+
+  Now we will proceed to show that $X_K$ is an equicontinuous set of functions. Let $\epsilon > 0$, and consider $\delta > 0$ such that $\delta < \frac{\epsilon}{K}$ and note that for all $x, y \in [0, 1]$ and all $f \in X_K$ whenever $0 < \abs{x - y} < \delta$ we find that,  
+  \begin{equation*}
+    \abs{f(x) - f(y)} \leq K\abs{x - y} \leq K \delta < \epsilon. 
+  \end{equation*}
+  Hence $X_K$ is equicontinuous. \\
+
+
+  Now we will proceed to show that $X_K$ is uniformly bounded. Suppose for the sake of contradiction that for $M \in [0 , \infty)$ there exist some $f \in X_K$ such that for some $x \in [0, 1]$ $|f(x)| \geq M$.
+  Now since $f$ is lipschitz with constant $K$ it follows that for all $y \in [0, 1]$
+  \begin{equation*}
+    \abs{f(x) - f(y)} \leq K
+  \end{equation*}
+  Therefore it must follow that, 
+  \begin{equation*}
+    \int_0^1 |f| \geq M - K.
+  \end{equation*}
+  However $M$ can be made arbitrarily large, say $(2 + K)$ which would contradict $\int_0^1|f|\leq 1$. Thus $X_K$ is uniformly bounded. Therefore by Arzela-Ascoli we conclude that $X_K$ is compact in $C([0, 1])$. \\
+\end{proof}
+
+
+\begin{proof} Note that $X_K$ is sequentially compact in $C([0, 1])$ so for any sequence $(f_n) \subseteq X_K$ we have a convergent subsequence in the $C([0, 1])$ infinity norm, (uniformly convergent subsequence). Such a subsequence is necesarilly convergent in the $L^1([0, 1])$ norm, 
+  since as $\norm{f_{n_k} - f}_{\infty} \to 0$ we also have that, 
+  \begin{equation*}
+    \int_{0}^{1} \abs{f_{n_k} - f} \leq \int_{0}^{1} \norm{f_{n_k} - f}_{\infty} = \norm{f_{n_k} - f}_{\infty} \to 0
+  \end{equation*}
+  Thus $X_K$ is also sequentially compact in $L^1([0, 1])$. 
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+
+
+% Need unifrom convergence, so let's throw out a set of measure zero to get there. 
+% Short name two syllables, use monotonicity. 
+\problem (Riemann integrable functions are continuous a.e.)
+\begin{enumerate}[(a)]
+\item On a domain $I = [a, b]$, let $(\psi_n)$ be an increasing sequence of step functions with $\abs{\psi_n} \leq M$ for some $M$. Show that $\lim \psi_n$ is lower semicontinuous almost everywhere. That is, show that for almost every $x \in [a, b]$, if $x_n \to x$ then $f(x) \leq \liminf_{n \to \infty} f(x_n)$. 
+\begin{proof}  Let $I = [a, b]$ with $(\psi_n)$ be an increasing sequence of step functions on $I$ with $\abs{\psi_n} \leq M$ for some $M$. Consider the set $E' = \cup_{i = 1}^\infty \mathcal{P}_i$ where $\mathcal{P}_i$ is the step partition for $\psi_i$. Not that $E'$ is comprised of a countable union of finite sets and is therefore countable, thus $m(E') = 0$. Now consider $E = [a, b] \setminus E'$, and by construction we know that for a fixed $x$ the sequence $\psi_n(x)$ is well defined, increasing, and bounded above by $M$. Hence on $E$, the pointwise limit $\lim_{n \to \infty}\psi_n = \psi$ exists. 
+
+
+Let $x \in E$ and suppose $(x_n) \subset E$ such that $x_n \to x$. Let $\epsilon > 0$, and note that since the $\psi$ is the pointwise limit of $\psi_n$ we know that there exists a $N_1$ such that, 
+\begin{align*}
+  \psi(x) - \psi_{N_1}(x) &< \epsilon,\\
+  \psi(x) &< \epsilon + \psi_{N_1}(x).
+\end{align*} 
+However since $\psi_{N_1}$ is a step function, and $x_n \to x$ we know that there exists an $N_2$
+such that $\psi_{N_1}(x) = \psi_{N_1}(x_{N_2})$. Recall that the sequence of step functions is increasing, so we have that $\psi_{N_1}(x) = \psi_{N_1}(x_{N_2}) \leq \psi(x_{N_2})$. Therefore we find that, 
+\begin{align*}
+  \psi(x) &< \epsilon + \psi(x_{N_2}),\\
+  \psi(x) - \epsilon &<  \psi(x_{N_2}).
+\end{align*}
+Note that $\psi(x_{N_2})$ is an eventual lower bound, and therefore $\psi(x) \leq \liminf_{n \to \infty} \psi(x_n)$. Hence $\psi(x)$ is lower semicontinuous almost everywhere. 
+\end{proof}
+
+\item Suppose $g, f$ and $G$ are measurable functions on $[a, b]$, $g \leq f \leq G$, $g = G$ almost everywhere, $g$ is lower semicontinuous, and $G$ is upper semicontinuous. Show that $f$ is continuous almost everywhere. 
+\begin{proof} Let $g, f$ and $G$ are measurable functions on $[a, b]$, $g \leq f \leq G$, $g = G$ almost everywhere, $g$ is lower semicontinuous, and $G$ is upper semicontinuous. Let $E$ be the set where $g = G$. Let $x \in E$ and consider $(x_n) \subset [a, b]$ such that $x_n \to x$. Since $g$ is lower semicontinuous we know that $g(x) \leq \liminf_{n \to \infty} g(x_n)$ and similarly since $G$ is upper semicontinuous we know that $G(x) \geq \limsup_{n \to \infty} G(x_n)$. The following chain of inequalities are produced by semicontinity of $g$, and $G$,  $g \leq f \leq G$, the definition of $\limsup$, $\liminf$ and the fact that $x \in E$ so $g(x) = f(x) = G(x)$, 
+  \begin{multline*}
+    f(x) = g(x) \leq \liminf_{n \to \infty} g(x_n) \leq \liminf_{n \to \infty} f(x_n) \leq \lim_{n \to \infty}f(x_n)\\
+     \leq \limsup_{n \to \infty} f(x_n) \leq \limsup_{n \to \infty} G(x_n) \leq G(x) = f(x)
+  \end{multline*}
+\end{proof}
+
+
+\item Show that Riemann integrable functions are continuous almost everywhere. [Hint: Find functions $g$ and $G$ with $g\leq f\leq G$ where $G=g$ a.e. and where $g$ and $G$ are continuous a.e.]
+\begin{proof} Suppose $f \in \mathcal{R}[a, b]$. Recall that by definition for any $\epsilon > 0$ there exists sequences of step function $g_n, G_n \in \text{Step}[a, b]$ with $g_n \leq f \leq G_n$ such that $g_n \to g$ and $G_n \to G$ where, 
+  \begin{equation*}
+    \lim_{n \to \infty} \int_a^b (G_n - g_n) \to 0 \qquad \text{alternatively,} \qquad  \int_a^b (G - g) = 0. 
+  \end{equation*}
+  
+    Now, previously this definition of being Riemann integrable was defined using the Riemann integral over step functions. However we have shown that this integral is equivalent to the Lebesgue integral, so we get that that $G - g = 0$ almost everywhere, so $G = g$ almost everywhere. Note that by (a) we conclude that $g$ is lower semicontinuous almost everywhere, and analogously with $G$ being upper semicontinuous almost everywhere. Having satisfied the hypothesis of (b) (save for a few null sets) we can conclude that $f$ is continuous almost everywhere. 
+\end{proof}
+
+
+
+
+
+\end{enumerate}
+\pagebreak
+
+
+
+
+
+
+\problem \textbf{Carothers 8.20} Let $E$ be a noncompact subset of $\RR$. Find a continuous function $f:E\to\RR$ that is $(i)$ not bounded; $(ii)$ bounded but has no maximum value.
+\begin{proof}
+Let $E$ be a noncompact subset of $\RR$.
+\begin{enumerate}[(i)]
+\item Consider the function $f = \tan(x)$ on the noncompact set $(\frac{\pi}{2}, \frac{\pi}{2})$. This function is clearly unbounded. 
+\item Consider the function $f = \arctan(x)$ on the noncompact set $\RR$. This function is bounded $|f| \leq \frac{\pi}{2}$ however has no maximum value. 
+\end{enumerate}
+\end{proof}
+\pagebreak
+
+
+
+
+
+%Common refinement then just bring the sums together. 
+\problem (Cauchy-Schwartz inequality for integrals.)
+\begin{enumerate}[(a)]
+\item Use the $(\ell_2)$ Cauchy-Schwartz inequality to prove that if $f$ and $g$ are simple and integrable, then
+\[
+\int|f||g|\leq\left[\int |f|^2\right]^{1/2}\left[\int|g|^2\right]^{1/2}.
+\]
+
+\begin{proof} Suppose $f$ and $g$ be simple, integrable functions, Written in standard form we know that, 
+  \begin{equation*}
+    f = \sum_{i = 1}^{n} a_i \chi_{A_i} \qquad g = \sum_{i = 1}^m b_i \chi_{B_i}
+  \end{equation*}
+  Where $(a_n), (b_n)$ are distinct sequences of real numbers, and $\{A_i\}, \{B_i\}$ are pairwise disjoint collection of measurable sets. Now consider constructing a common refinement of the domain of measurable sets, $\{C_i\} = \{A_i\} \cup  \{B_i\}$ with coefficients $a'_i$ and $b'_i$ so that 
+  \begin{equation*}
+    f = \sum_{i = 1}^{j} a'_i \chi_{C_i} \qquad g = \sum_{i = 1}^j b'_i \chi_{C_i}
+  \end{equation*}
+  On the common refinement it follows that, 
+  \begin{equation*}
+    \int|f||g| = \int \sum_{i = 1}^{j} |a'_i||b'_i|\chi_{C_i} = \int \sum_{i = 1}^{j} |(a'_i\chi_{C_i})(b'_i\chi_{C_i})|.
+  \end{equation*}
+  By the $(\ell_2)$ Cauchy-Schwartz inequality it follows that, 
+  \begin{equation*}
+    \int|f||g| \leq \int \norm{a'_i\chi_{C_i}}_{2}\norm{b'_i\chi_{C_i}}_{2} = \left[\int |f|^2\right]^{1/2}\left[\int|g|^2\right]^{1/2}.
+  \end{equation*}
+
+
+\end{proof}
+
+
+
+
+
+
+
+
+\item Suppose that $f$ and $g$ are measurable functions such that $\abs{f}^2, \abs{g}^2 \in L^1$. Show that $fg \in L^1$ and $\int\abs{fg} \leq \left[\int \abs{f}^2]\right]^\frac{1}{2}\left[\int \abs{g}^2\right]^\frac{1}{2}$.
+\begin{proof} Suppose that $f$ and $g$ are measurable functions such that $\abs{f}^2, \abs{g}^2 \in L^1$. First since $f$ and $g$ are measurable consider the disjoint measurable sets $E = \{f \geq g\}$ and by definition its compliment $E^c = \{f < g\}$. Now since $|fg|$ is a nonnegative measurable function we know that (Corollary 18.9), 
+  \begin{equation*}
+    \int \abs{fg} = \int_E \abs{fg} + \int_{E^c} \abs{fg} \leq \int_E \abs{f^2} + \int_{E^c} \abs{g^2} < \infty.
+  \end{equation*}
+  Hence $fg \in L^1$. Now appealing to the basic construction and the Monotone Convergence Theorem (Corollary 18.8) there exists sequences of nonnegative simple integral functions $(f_n)$ $(g_n)$ which are increasing and have the property that, 
+  \begin{equation*}
+    \int |f| = \lim_{n \to \infty} \int f_n \qquad \int |g| = \lim_{n \to \infty} \int g_n 
+  \end{equation*}
+  Note that $\lim_{n \to \infty} |f_n||g_n| = |f||g|$ and $|f_n||g_n|$ is also an increasing sequence of nonnegative measurable functions we find, again by the Monotone Convergence Theorem that,  
+  \begin{equation*}
+    \lim_{n \to \infty} \int |f_n||g_n| = \int |f||g| = \int |fg|. 
+  \end{equation*}
+  Now consider that by the previous problem, for all $n$ we know that,   
+  \begin{equation*}
+    \int \abs{f_n} \abs{g_n} \leq \left[\int |f_n|^2\right]^{1/2}\left[\int|g_n|^2\right]^{1/2}.
+  \end{equation*}
+  Considering the limit and noting that the terms on the right hand side converge independently we find that,   
+  \begin{align*}
+    \lim_{n \to \infty} \int \abs{f_n} \abs{g_n} &\leq \lim_{n \to \infty}\left[\int |f_n|^2\right]^{1/2}\left[\int|g_n|^2\right]^{1/2},\\
+    \int\abs{fg} &\leq \left[\int \abs{f}^2\right]^\frac{1}{2}\left[\int \abs{g}^2\right]^\frac{1}{2}.
+  \end{align*}
+
+\end{proof}
+\end{enumerate}
+\pagebreak
+\problem (The approximate with wild abandon problem.)
+
+
+% Integration against continuous function gives zero.  Dominated convergence
+% polynomial, to continuous to indicator to measurable sets. Show $f$ is zero almost everywhere
+Suppose $f\in L^1[a,b]$ and $\int_a^b fg=0$ for every polynomial $g$. Show that $f=0$ almost everywhere.
+
+[Hint: First show that $\int_I f=0$ for every interval in $[a,b]$. Then show that $\int_Ef=0$ for every measurable set in $[a,b]$. You might find Exercise 18.35 (the even more is true part) to be handy, as well.]
+\begin{proof} Suppose $f\in L^1[a,b]$ and $\int_a^b fg=0$ for every polynomial $g$. Let $c \in C[a, b]$ and note that by the Weierstrass Approximation Theorem there exists a sequence of polynomials $(p_n) \subset P[a, b]$ such that $p_n \to c$ uniformly. Note that $\chi_{[a, b]}fp_n \to \chi_{[a, b]fc}$ pointwise, also note that $p_n$ are continuous function on a compact domain and hence each $p_n$ is bounded, clearly a uniformly convergent sequence of bounded function is uniformly bounded and hence $|p_n| \leq M$ for some $M$. Note that
+  \begin{equation*}
+    \int \abs{\chi_{[a, b]}fp_n} = \int_a^b \abs{f}\abs{p_n} \leq \int_a^b \abs{f}M \in L^1
+  \end{equation*}
+  Having satisfied the hypothesis of the Dominating Convergence Theorem we conclude that, 
+  \begin{equation*}
+    \lim_{n \to \infty} \int \chi_{[a, b]}fp_n  = \int \chi_{[a, b]fc}.
+  \end{equation*}
+  Since the left hand side is strictly a sequence of zeros we know that $\int_a^b fc=0$ for any continuous function. \\
+
+  Now recall that by Theorem 18.27, which gives $C[a, b]$ is dense in $L^1[a, b]$ and since $\chi_I \in L^1[a, b]$ for any interval $I \subseteq [a, b]$ there exists a sequence of continuous functions $c_n \to \chi_I$ in the $L^1[a, b]$ norm. This implies that $fc_n \to f\chi_I$ and therefore 
+  \begin{equation*}
+    \lim_{n \to \infty}\int_a^b fc_n = \int_a^b f\chi_I,
+  \end{equation*}
+  and again since the left hand side is a sequence of zeros we know $\int_a^b \chi_If = \int_I f = 0$.
+
+  Now consider a measurable set $E \subseteq [a, b]$, and let $\{I_k\}_n$ be a sequence of nested measuring covers, where each $I \in I_k$ is $I \subseteq [a , b]$, disjoint and,
+  \begin{equation*}
+    \bigcap_n^\infty \bigcup_k^\infty I_{k_n} = E.
+  \end{equation*}
+  By continuity of the integral from above(for measurable set) and since inside each measuring cover, the intervals are disjoint we have (by Corollary 18.26) that,
+  \begin{equation*}
+    \int_E f = \lim_{n \to \infty} \int_{\bigcup_k^\infty I_{k_n}} f = \lim_{n \to \infty} \sum_{k = 1}^\infty \int_{I_{k_n}} f = 0. 
+  \end{equation*}
+  Noting that each term in the sum is zero, and therefore each term in the sequence of integrals over measuring covers is also zero we get that $\int_E f = 0$.
+  Finally let $E = \{f \geq 0\}$ and note that, 
+  \begin{equation*}
+    \int_a^b \abs{f} = \int_E f + \int_{[a, b] \setminus E} -f = 0
+  \end{equation*}
+  Thus $f = 0$ almost everywhere. 
+\end{proof}
+\pagebreak
+
+
+
+
+\problem  A sequence $(f_n)$ is Cauchy in measure if for every $\epsilon>0$ there is an index $N$ such that if $n,m\ge N$ then $m(\{|f_n-f_m|>\epsilon\})<\epsilon$. Show that if $(f_n)$ is Cauchy in measure and has a subsequence that is convergent in measure, then the full sequence is convergent in measure.
+\begin{proof} Suppose $(f_n)$ is Cauchy in measure and has a subsequence $(f_{n_j})$ that is convergent in measure. 
+  
+  Let $\epsilon > 0$, since $(f_n)$ is Cauchy in measure we know that there exist an $N_1$ such that for all $n,m\ge N_1$ we have 
+  
+\begin{equation*}
+  m(\{|f_n-f_m|>\frac{\epsilon}{2}\})<\frac{\epsilon}{2}.
+\end{equation*}
+  
+  
+Since $(f_{n_j})$ is convergent in measure we also have that there exists an $N_2$ such that for all $k \geq N_2$, 
+\begin{equation*}
+  m(\{|f_{n_k}-f|>\frac{\epsilon}{2}\})<\frac{\epsilon}{2}. 
+\end{equation*}
+  
+  Now consider $N_3$ which is the index of $N_2$ in $(f_n)$, and let $N = \max{N_1, N_3}$. Consider $n \geq N$, let $x \in \{|f_n-f|>\epsilon\}$ and note that by the triangle inequality for some $n_k > n$, 
+  \begin{equation*}  
+   \abs{f_n(x) - f(x)} \leq \abs{f_n(x) - f_{n_k}(x)} + \abs{f_{n_k} - f(x)}.
+  \end{equation*}
+  Since $\epsilon < \abs{f_n(x) - f(x)}$ it must be the case that either,
+  \begin{equation*}
+    \abs{f_n(x) - f_{n_k}(x)}> \frac{\epsilon}{2}\qquad \text{or} \qquad \abs{f_{n_k} - f(x)} > \frac{\epsilon}{2}.
+  \end{equation*}
+  Hence, 
+  \begin{equation*}
+    \{|f_n-f|>\epsilon\} \subseteq \{|f_n-f_{n_k}|>\frac{\epsilon}{2}\} \cup \{|f_{n_k}-f|>\frac{\epsilon}{2}\}.
+  \end{equation*}
+  Thus by monotonicity and subadditivity, 
+  \begin{equation*}
+    m(\{|f_n-f|>\epsilon\}) \leq m(\{|f_n-f_{n_k}|>\frac{\epsilon}{2}\}) + m(\{|f_{n_k}-f|>\frac{\epsilon}{2}\}) < \epsilon. 
+  \end{equation*}
+
+
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+%L_2 is complete to show that this sequence of functions converges
+\problem Consider the series $\sum_{k=1}^\infty a_k\sin(kx)$ on the domain $[0,2\pi]$. Suppose that $\sum_{k=1}^\infty (a_k)^2$ converges. Prove that the series converges in $L^2([0,2\pi])$.
+\begin{proof} Consider the series $\sum_{k=1}^\infty a_k\sin(kx)$ on the domain $[0,2\pi]$ and suppose that $\sum_{k=1}^\infty (a_k)^2$ converges. Let $(s_n)$ be the sequence of partial sum functions, and note that $s_n$ is a continuous function on a compact interval, so it certainly is in $L^2([0,2\pi])$.
+  
+  Now we will show that $(s_n)$ is a Cauchy sequence in the $L^2[0, 2\pi]$. Let $\epsilon > 0$ and consider $N$ large enough so that for all $n, m \geq N$, without loss of generality $n \leq m$ we have that,
+  \begin{equation*}
+    \sum_{i = n}^m (a_i)^2 < \frac{\epsilon}{\pi}. 
+  \end{equation*}
+  Thus it follows that, 
+  \begin{align*}
+    \int_0^{2\pi}\abs{s_n - s_m}^2 =  \int_{0}^{2\pi} \abs{ \sum_{k=1}^n a_k\sin(kx) - \sum_{k=1}^m a_k\sin(kx) }^2
+    &= \int_{0}^{2\pi} \abs{\sum_{k= n + 1}^m a_k\sin(kx) }^2
+  \end{align*}
+  We recall that for $m \neq n$ integrals of the form, 
+  \begin{equation*}
+    \int_0^{2\pi} \sin(mx)\sin(nx) = 0.
+  \end{equation*}
+  Therefore expanding the term on the right hand side we get that, 
+  \begin{equation*}
+    \int_{0}^{2\pi} \abs{\sum_{k= n + 1}^m a_k\sin(kx) }^2 = \int_{0}^{2\pi} \sum_{k= n + 1}^m a_k^2\sin^2(kx).
+  \end{equation*}
+  By linearity we get, 
+  \begin{equation*}
+    \int_{0}^{2\pi} \sum_{k= n + 1}^m a_k^2\sin^2(kx) = \sum_{k= n + 1}^m \left(a_k^2\int_{0}^{2\pi} \sin^2(kx)\right) =  \sum_{k= n + 1}^m a_k^2\pi < \epsilon. 
+  \end{equation*}
+  Therefore the sequence of $(s_n)$ is Cauchy in $L^2([0, 2\pi])$ and since $L^2$ is complete $(s_n)$ must converge so equivalently the series $\sum_{k=1}^\infty a_k\sin(kx)$ must converge. 
+\end{proof}
+\pagebreak
+
+
+
+
+
+
+
+\end{problems}
+\end{document}
+

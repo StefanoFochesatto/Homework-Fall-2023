@@ -1,0 +1,370 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\FF}{\mathcal{F}}
+
+
+
+\let\latexchi\chi
+\makeatletter
+\renewcommand\chi{\@ifnextchar_\sub@chi\latexchi}
+\newcommand{\sub@chi}[2]{% #1 is _, #2 is the subscript
+  \@ifnextchar^{\subsup@chi{#2}}{\latexchi^{}_{#2}}%
+}
+\newcommand{\subsup@chi}[3]{% #1 is the subscript, #2 is ^, #3 is the superscript
+  \latexchi_{#1}^{#3}%
+}
+\makeatother
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework \#8}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+This was also a very poor showing, very sorry. 
+\begin{problems}
+
+  \problem \textbf{Carothers 11.65} Let $K(x, t)$ be a continuous function on the square $[a, b] \times [a, b]$. 
+  \begin{enumerate}
+    \item[\textbf{(a)}] Given $f \in C[a, b]$, show that $g(x) = \int_{a }^{b }f(t) K(x, t)dt$ defines a continuous function $g \in C[a, b]$.
+
+    \begin{proof} Let $\epsilon > 0$. 
+      Note that since $K$ and $f$ are continuous functions it follows that $f(x)K(x, t)$ is also continuous on $[a, b] \times [a, b]$. Since $f(x)K(x, t)$ is a continuous function on a compact domain, it is also uniformly continuous, therefore there exists a $\delta$, such that for all $c,d \in [a, b] \times [a, b]$  where $0 < \max{|x_c - x_d|, |t_c- t_d|} < \delta$ we get, 
+      \begin{equation*}
+        |f(x_c)f(x_c,t_c) - f(x_d)f(x_d,t_d)| < \epsilon.
+      \end{equation*}
+
+      Then for a fixed $t \in [a, b]$ it follows that if $0 < \abs{x - y} < \delta$, clearly we get that $\max{|x - y|, |t- t| = 0} = \abs{x - y} < \delta$.
+      \begin{align*}
+        \abs{\int_{a }^{b }f(t) K(x, t)dt - \int_{a }^{b }f(t) K(y, t)dt} &= \abs{\int_{a }^{b }f(t)K(x, t) - f(t)K(y, t)dt}\\
+        &\leq\int_{a }^{b }\abs{f(t)K(x, t) - f(t)K(y, t)}dt\\
+        &<\int_{a }^{b }\epsilon dt =  (b - a) \epsilon.
+      \end{align*}
+ 
+
+
+
+      \end{proof}
+      \vspace*{.15in}
+
+      \item[\textbf{(b)}] Define $T: C[a, b] \to C[a, b]$ by $(Tf)(x)= \int_{a }^{b } f(t) K(x, t)dt$. Show that $T$ maps bounded sets into equicontinuous sets. In particular, $T$ is continuous. 
+      \begin{proof} Let $\FF \subset C[a, b]$ be uniformly bounded. We wish to prove that $T(\FF)$ is equicontinuous, and we will proceed almost exactly as the previous problem. Let $\epsilon > 0$. Since $\FF$ is uniformly bounded there exists an $f_m$ such that $|f(t)| \leq f_m$ for all $f \in \FF$ and $t \in [a,b]$. Now again, $f_mK(x, t)$ is continuous on a compact domain, it is also uniformly continuous. Therefore there exists a $\delta$, such that for all $c,d \in [a, b] \times [a, b]$  where $0 < \max\{|x_c - x_d|, |t_c- t_d|\} < \delta$ we get, 
+      \begin{equation*}
+        |f_mK(x_c,t_c) - f_mK(x_d,t_d)| = |f_m\left(K(x_c,t_c) - K(x_d,t_d)\right)| < \epsilon.
+      \end{equation*}
+      Fix $t \in [a, b]$ and we find that when $0 < |x - y|  < \delta$ clearly we get that $\max\{|x - y|, |t- t| = 0\} = \abs{x - y} < \delta$ so it follows that,
+        \begin{align*}
+          \abs{\int_{a }^{b }f(t) K(x, t)dt - \int_{a }^{b }f(t) K(y, t)dt} &=  \abs{\int_{a }^{b }f(t)K(x, t) - f(t)K(y, t)dt}\\
+          &=\abs{\int_{a }^{b }f(t)(K(x, t) -K(y, t))dt}\\
+          &\leq\int_{a }^{b }\abs{f(t)}\abs{(K(x, t) -K(y, t))}dt\\
+          &\leq\int_{a }^{b }\abs{f_m}\abs{K(x, t) - K(y, t)}dt\\
+          &< (b - a) \epsilon.
+        \end{align*}
+        Since we've found a single $\delta$ which satisfies the $\epsilon-\delta$ definition of uniform continuity for all $f \in \FF$ simultaneously we can conclude that $\FF$ is equicontinuous.
+
+        Now note that $T$ is a linear operator, since for $f, g \in C[a, b]$ and $\alpha , \beta \in \RR$ we find that, 
+        \begin{align*}
+          T(\alpha f + \beta g) &= \int_{a }^{b } \left(\alpha f(t) + \beta g(t) \right) K(x, t)dt\\ 
+          &= \int_{a }^{b }\alpha f(t)K(x, t) + \beta g(t)K(x, t) dt \\
+          &= \alpha \int_{a }^{b }f(t)K(x, t)dt+ \beta \int_{a }^{b } g(t)K(x, t) dt = \alpha T(f) + \beta T(g)
+        \end{align*}
+        Now let $f \in C[a, b]$, and since $K(x, t)$ is a continuous function on the compact domain $[a, b] \times [a, b]$ so $K$ achieves a maximum at some $K_M$. Finally we show boundedness with, 
+        \begin{align*}
+          \norm{T(f)}{\infty} &= \norm{\int_{a }^{b } f(t) K(x, t)dt}{\infty} \leq \norm{\int_{a }^{b } \norm{f}{\infty} K_M dt}{\infty}\\
+           &= \norm{\norm{f}{\infty} \int_{a }^{b } K_M dt}{\infty}\\
+           &= \norm{f}{\infty} \norm{\int_{a }^{b } K_M dt}{\infty}\\
+           &= \norm{f}{\infty} (b - a)K_m
+        \end{align*}
+      \end{proof}
+
+
+      \vspace*{.15in}
+
+      \item[\textbf{(c)}] Show that if $\int_{a }^{b }\abs{K(x, t )}dt \leq 1$ for all $x \in [a, b]$ then the Arzela-Ascoli Theorem implies that given any $f \in C[a, b]$, the sequence $(T^{(n)}f)_n$ has a subsequence that converges in $C[a, b]$. 
+      \begin{proof} Let $\FF$ be the set $(T^{(n)}f)_n$. We will show that $T(\FF)$ is equicontinuous by proving that $(T^{(n)}f)_n$ is uniformly bounded, and applying the previous result. Since $f \in C[a, b]$ we know that there exists an $f_m$ such that $\abs{f(x)} < f_m$ for all $x \in [a, b]$. We will proceed by induction to show that $\FF$ is uniformly bounded by $f_m$. Note that $T^{(1)}f$ can be written as the following, 
+        \begin{equation*}
+          |T^{(1)}f| = \abs{\int_{a }^{b }f(x)K(x, t)dt} \leq \int_{a }^{b }\abs{f(x)}\abs{K(x, t)}dt \leq f_m  \int_{a }^{b }\abs{K(x, t)}dt \leq f_m. 
+        \end{equation*}
+        Now suppose $|T^{(n)}f| \leq f_m$ and consider $T^{(n + 1)}$ can be written as the following, 
+        \begin{equation*}
+          |T^{(n + 1)}| = \abs{\int_{a }^{b } (T^{(n)}f(x)) K(x, t) dt} \leq \int_{a }^{b } \abs{T^{(n)}f(x)} \abs{K(x, t)} dt \leq f_m \int_{a }^{b }\abs{K(x, t)}dt \leq f_m. 
+        \end{equation*}
+        Thus we have show that $\FF$ is uniformly bounded and by the previous result we know that $T(\FF)$ is an equicontinuous set of functions. It also follows that since $T(\FF) \subseteq \FF$ we know that $T(\FF)$ is uniformly bounded. Now consider $\overline{T(\FF)}$ a closed, bounded, equicontinuous set (the limit of a uniformly convergent sequence of equicontinuous functions must be uniformly continuous by the same $\delta$, and its also probably bounded. Definitely need to spend some more time on this result.), we conclude be Arzela-Ascoli that $\overline{T(\FF)}$ is compact. Since $T(\FF)$ is a sequence contained in a compact set, $\overline{T(\FF)}$ it must have a convergent subsequence, and therefore since $T(\FF) \subseteq \FF$, we can conclude that $\FF$ has a convergent subsequence. 
+      \end{proof}
+      \vspace*{.15in}
+  \end{enumerate}
+  \vspace*{.5in}
+
+
+
+
+
+
+  \problem Suppose $f \in \mathcal{R}[a, b]$ and $\alpha \in \RR$. Show that $\alpha f \in \mathcal{R}[a, b]$ and, 
+  \begin{equation*}
+    \int_{a }^{b }\alpha f = \alpha \int_{a }^{b }f.
+  \end{equation*}
+  \begin{proof} First we will show that $\alpha f \in \mathcal{R }[a, b]$. Since $f \in \mathcal{R }[a, b]$ there exists step functions $H_n$ with $H_n \geq f$ such that, 
+    \begin{equation*}
+      \int_{a }^{b }H_n \leq \int_{a }^{b }f + \frac{1}{n}. 
+    \end{equation*}
+    Similarly we there exists step functions $h_n$ such that $h_n \leq f$ with the analogous property that, 
+    \begin{equation*}
+      \int_{a }^{b }h_n \geq \int_{a }^{b }f - \frac{1}{n}. 
+    \end{equation*}
+    Clearly $\int_{a }^{b }H_n \to \int_{a }^{b }f$ and $\int_{a }^{b }h_n \to \int_{a }^{b }f$. 
+    So for $\alpha > 0$ it follows that for all $x \in [a, b]$, 
+    \begin{equation*}
+      \alpha h_n(x) \leq \alpha f(x) \leq \alpha H_n(x).
+    \end{equation*}
+    Integrating over $[a, b]$ we find that
+    \begin{equation*}
+      \int_{a }^{b } \alpha h_n(x) \leq  \int_{a }^{b } \alpha f(x) \leq  \int_{a }^{b } \alpha H_n(x).
+    \end{equation*}
+    Since $H_n$ and $h_n$ are step functions by linearity it follows that, 
+    \begin{equation*}
+      \alpha \int_{a }^{b }f - \frac{1}{n}\leq \alpha \int_{a }^{b } h_n(x) \leq  \int_{a }^{b } \alpha f(x) \leq  \alpha \int_{a }^{b } H_n(x) \leq \alpha \int_{a }^{b }f + \frac{1}{n}.
+    \end{equation*}
+    Taking the limit we find that, 
+    \begin{equation*}
+      \alpha \int_{a }^{b }f \leq  \int_{a }^{b } \alpha f(x) \leq \alpha \int_{a }^{b }f.
+    \end{equation*}
+    So we conclude that, 
+    $\alpha f \in \mathcal{R}[a, b]$ and, 
+  \begin{equation*}
+    \int_{a }^{b }\alpha f = \alpha \int_{a }^{b }f.
+  \end{equation*}
+    
+  \end{proof}
+  \vspace*{.5in}
+
+
+
+  \problem Show that the uniform limit of Riemann integrable functions is Riemann integrable. Conclude that $\mathcal{R}[a, b]$ is a closed subspace of $B[a, b]$. 
+  \begin{proof}  let $f_n \to f$ converge uniformly such that $f_n \in \mathcal{R}[a, b]$. Let $\epsilon > 0$. Since  $f_n \to f$ choose $N$ such that, $\abs{f(x) - f_N(x)} < \epsilon$ for all $x \in [a, b]$. Now since $f_N \in \mathcal{R}[a, b]$ there exists $H, h \in \text{Step}[a, b]$ with $h \leq f_N \leq H$ such that,
+    \begin{equation*}
+      \int_{a }^{b }H(x) - h(x) dx < \epsilon. 
+    \end{equation*} 
+
+    Now note that since $\abs{f(x) - f_N(x)} < \epsilon$ it follows that, 
+    \begin{align*}
+      -\epsilon < &f(x) - f_N(x) < \epsilon,\\
+      f_N(x) - \epsilon < &f(x) < f_N(x) + \epsilon,\\
+      h(x) - \epsilon < &f(x) < H(x) + \epsilon.
+    \end{align*}
+    We see that a step function plus a constant is simply another step function so $h(x) - \epsilon , H(x) + \epsilon \in \text{Step}[a, b]$ and we also find that by linearity of the integral of step functions, 
+    \begin{align*}
+      \int_{a }^{b }( H(x) + \epsilon) -( h(x) - \epsilon) dx &= \int_{a }^{b }H(x) - h(x)  + 2\epsilon dx,\\
+      &=\int_{a }^{b }H(x) - h(x)dx  + \int_{a }^{b }2\epsilon dx,\\
+      &< \epsilon  + (b - a)2\epsilon = (1 + 2b - 2a)\epsilon.
+    \end{align*}
+    Therefore $f \in \mathcal{R}[a, b]$. Recall that by definition $\mathcal{R}[a, b] \subseteq B[a, b]$ and therefore by our result it follows that $\mathcal{R}[a, b]$ is a closed subspace of $B[a, b]$. 
+    
+    
+  \end{proof}
+  \vspace*{.5in}
+
+
+  \problem Determine if $\chi_{\Delta} \in \mathcal{R}[0, 1]$, where $\Delta$ is the Cantor set. 
+  \begin{proof} 
+  Recall the that $\Delta$ can be defined by the following recurrence relation on sets. 
+   \begin{align*}
+    I_0 &= [0, 1]\\
+    I_{k + 1} &= \frac{1}{3} I_k \cup \left(\frac{2}{3} + \frac{1}{3}I_k\right)\\
+    \Delta &\coloneqq \bigcap I_k
+  \end{align*}
+  Now let $H_n$ be the characteristic function on the set $I_k$. We know that $H_n \in \text{Step}[a, b]$ since each $I_k$ is a union of finitely many intervals. Also we have that $H_n \geq \chi(\Delta)$ since $\Delta \subset I_k$. Since $H_n$ is the characteristic function on the set $I_k$ its clear that, 
+  \begin{equation*}
+    \int_{0 }^{1 }H_n = \left(\dfrac{2}{3}\right)^n.
+    \end{equation*}
+    Note that this integral converges to zero. Therefore we know that, 
+    \begin{equation*}
+      \overline{\int_{0}^{1}} \chi(\delta) \leq \int_{0 }^{1 }H_n \to 0.
+    \end{equation*}
+    Now clearly we can consider an $h \in \text{Step}[0, 1]$ where $h = 0$ and therefore $h \leq \chi{\Delta}$. So it follows, that 
+    \begin{equation*}
+      \underline{\int_{0}^{1}} \chi(\delta) \geq 0.
+    \end{equation*}
+    Thus $\chi_{\Delta} \in \mathcal{R}[0, 1]$ and $\int_{0}^{1} \chi(\delta) = 0$. 
+
+     
+  \end{proof}
+
+
+
+
+
+
+\end{problems}
+\end{document}

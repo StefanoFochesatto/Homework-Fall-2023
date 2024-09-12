@@ -1,0 +1,136 @@
+% !TEX TS-program = pdflatexmk
+\documentclass[12pt]{article}
+
+\usepackage{pgf,tikz}
+\usetikzlibrary{arrows}
+
+% Layout.
+\usepackage[top=.75in, bottom=0.75in, left=.75in, right=.75in, headheight=1in, headsep=6pt]{geometry}
+\usepackage{subfig}
+% Fonts.
+\usepackage{mathptmx}
+\usepackage[scaled=0.86]{helvet}
+\renewcommand{\emph}[1]{\textsf{\textbf{#1}}}
+
+% Misc packages.
+\usepackage{amsmath,amssymb,latexsym}
+\usepackage{graphicx,tikz}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{tabularx,colortbl}
+\usepackage{amsthm}
+\usepackage{enumitem}
+%to make tikz pics work
+\usepackage{tikz,pgfplots}
+\usepackage{float}
+\newcommand\solution{\localhead{Solution:}}
+
+\usepackage[colorlinks=true]{hyperref}
+
+% Paragraph spacing
+\parindent 0pt
+\parskip 6pt plus 1pt
+\def\tableindent{\hskip 0.5 in}
+\def\ts{\hskip 1.5 em}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy} 
+\lhead{\large\sf\textbf{MATH 663 }}
+\rhead{\large\sf\textbf{Fall 2023}}
+\chead{\large\sf\textbf{HW 3}}
+
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+\def\heading#1{\localhead{\large\emph{#1}}}
+\def\subheading#1{\localhead{\emph{#1}}}
+
+%% Special Math Symbol shortcuts
+\newcommand{\rad}{\text{rad}}
+\newcommand{\diam}{\text{diam}}
+\newcommand{\circumference}{\text{circ}}
+
+\newcommand{\NN}{\mathbb{N}}
+
+%\newenvironment{clist}%
+%{\bgroup\parskip 0pt\begin{list}{$\bullet$}{\partopsep 4pt\topsep 0pt\itemsep -2pt}}%
+%{\end{list}\egroup}%
+
+\usetikzlibrary{calc}
+%\pgfplotsset{my style/.append style={axis x line=middle, axis y line=
+%middle, xlabel={$x$}, ylabel={$y$}, axis equal }}
+
+
+\begin{document}
+\begin{enumerate}
+% If I delete any one vertex, G is still connected. 
+	\item Show that every automorphism of a tree fixes a vertex or an edge.\\ 
+	\begin{proof} Suppose $T$ is a tree and $\phi$ an automorphism. We will proceed to 
+		show that $\phi$ has a fixed vertex or edge by induction. Clearly $K_0$ will have a fixed point. 
+		and a tree on two vertices is guaranteed to have a fixed edge.
+
+		Suppose every automorphism of a tree on $n$ vertices has a fixed vertex or edge. Let 
+		$T$ be a tree on $n+1$ vertices and $\phi$ an automorphism. Let $L$ be the set of leaves in 
+		$T$ and note that the image of $L$ under any automorphism will have to be $L$. If $\phi|_L$ has a fixed vertex or edge we are done, otherwise we note that $\phi|_{L^c}$ is itself an automorphism on a tree $T - L$ with less than $n$ vertices and by the induction hypothesis must have a fixed vertex or edge. 
+	\end{proof}
+	\newpage
+
+	
+
+	\item Show that a graph is bipartite if and only if every induced cycle has even length.
+	\begin{proof} $(\leftarrow)$ Suppose a graph $G$ where every induced cycle has even length. Let $v$ be some vertex in $G$. Note that it must be the case that all $N_1(v)$ must be non-adjacent otherwise an induced 3-cycle would form. If all $N_1(v)$ are non-adjacent it would again follows that all $N_2(v)$ are all non-adjacent otherwise an induced 5-cycle would form. Repeat inductively until the whole graph is traversed. We conclude that all $N_i(v)$ neighborhoods are non-adjacent and 
+	graph can be partitioned by even and odd neighborhoods. 
+	\end{proof}
+
+	\begin{proof} $(\rightarrow)$ The forward direction is a direct consequence of Proposition 1.6.1 which was shown in class. 
+	\end{proof}
+	\newpage
+
+
+	\item Prove or disprove that a graph is bipartite if and only if no two adjacent vertices have the same distance from any other vertex. 
+	\begin{proof}$(\rightarrow)$ Suppose $G$ is a graph and there exists a pair of adjacent vertices $x$ and $y$ whose distance from every vertex in the graph is the same. Note that there must exists some $v$ such that the shortest paths $xPv$ and $yPv$ are disjoint. Clearly these paths, along with edge $xy$ will form an odd cycle, so $G$ is not bipartite. 		
+	\end{proof}
+
+
+	\begin{proof}$(\leftarrow)$ Suppose $G$ is not bipartite. Then by Proposition 1.6.1 and the previous problem there exists an smallest induced odd cycle $C_{2n+1}$. Pick $x$ and $y$ incident in said cycle and note that there exists a $v$ on the cycle a distance of $n$ away from both $x$ and $y$. There is no shorter path between vertices $x, y$ and $v$ in $G$ as $C_{2n+1}$ was induced and chosen to be the smallest. 
+		For clarity, suppose there exist a shorter path $xPv$ in $G$, not on the cycle. Then up to parity of paths either $xC_{2n+1}vPx$ forms a smaller odd cycle, or $xyC_{2n+1}vPx$ forms a smaller cycle. 
+	\end{proof}
+	\newpage
+
+
+	\item Prove or disprove that every connected graph contains a walk that traverses each of its edges exactly once in each direction. 
+	\begin{proof} Suppose $G$ is a connected graph. Since it is connected it $G$ contains a spanning tree $T$. We will proceed to show by induction on the number of vertices that all trees have such a walk. 
+
+		Clearly a tree on two vertices has such a walk. Suppose a tree $T$ on $n$ vertices. 
+		Let $x$ be a leaf adjacent vertex $y$ via edge $e$. Note that $T - x$ is a tree on $n - 1$ vertices, by the induction hypothesis we know that $T - x$ has a desired walk $W$. We construct a new walk $W^*$ on graph $T$ by inserting $exe$ after the first (or only) instance of vertex $y$. Note that $W^*$ has the desired property.   
+
+	Let $W$ be the walk on $T$ and let $E'$ be the set of all edges in $G$, not in $T$. 
+	We construct a new walk $W^*$, for each $e \in E'$ choose one vertex which is incident, call it $x$ and we insert $ex$ into the walk sequence after the first instance of $x$. 
+ 
+	\end{proof}
+	\newpage
+
+	
+
+	\item  Prove that if $X$ is a topological minor of $Y$ and $Y$ is a topological minor of $Z$, then $X$ is a topological minor of $Z$. 
+	\begin{proof} Suppose $X$ is a topological minor of $Y$ and $Y$ is a topological minor of $Z$. Then there exists a subdivision $TX$ of $X$ such that $TX \subseteq Y$. Note that since $Y$ is a topological minor of $Z$ we also know that there exists a subdivision $TY$ such that $TY \subseteq Z$. Since $TX \subseteq Y$ we know there exists a $TX' \subseteq TY$ which is possibly a further subdivision of $TX$, and most importantly still a subdivision of $X$. Hence $TX' \subseteq TY \subseteq Z$. 
+ 	\end{proof}
+	\newpage
+
+
+	\item Prove that if $G$ contains a walk from vertex $u$ to vertex $v$, then it must contain a $uv$-path. 
+	\begin{proof} Let $G$ be a graph containing a walk from vertex $u$ to vertex $v$. 
+		Let walk $W$ have a walk sequence, 
+		\begin{equation*}
+			W = v_0e_1v_1e_2v_2\dots v_{k - 1}e_kv_k.
+		\end{equation*}
+		If neither $v_i$ or $e_i$ repeats, then our walk is a path. Otherwise for each pair of vertices $v_i = v_j$ with $i \neq j$ remove $e_{i + 1}v_{i+1}\dots v_j$ from the walk. 
+		Clearly this operation removes repeated vertices, and since any repeated edge is a consequence of a repeated vertex, repeated edges are removed as well. 
+  	\end{proof}
+	\newpage
+
+
+\end{enumerate}
+
+\end{document}
+
+

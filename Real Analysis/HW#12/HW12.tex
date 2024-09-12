@@ -1,0 +1,485 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\FF}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\BB}{\mathcal{B}}
+
+
+\newcommand{\QQ}{\ensuremath{\mathbb Q}}
+
+
+
+\let\latexchi\chi
+\makeatletter
+\renewcommand\chi{\@ifnextchar_\sub@chi\latexchi}
+\newcommand{\sub@chi}[2]{% #1 is _, #2 is the subscript
+  \@ifnextchar^{\subsup@chi{#2}}{\latexchi^{}_{#2}}%
+}
+\newcommand{\subsup@chi}[3]{% #1 is the subscript, #2 is ^, #3 is the superscript
+\latexchi_{#1}^{#3}%
+}
+\makeatother
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework \#11}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+
+
+
+\begin{problems}
+
+  \problem \textbf{Carothers 18.1} If $\psi$ is nonnegative, integral simple function, check that, 
+  
+  \begin{equation*}
+    \int \psi = \sup\left\{ \int \varphi : 0 \leq \varphi \leq \psi, \varphi \text{ simple and integrable}\right\}
+  \end{equation*}
+
+  \begin{proof} Clearly since $\psi$ is itself a nonnegative, integrable simple function we can conclude that, 
+    \begin{equation*}
+      \int \psi \leq \sup\left\{ \int \varphi : 0 \leq \varphi \leq \psi, \varphi \text{ simple and integrable}\right\}.
+    \end{equation*}
+
+    What is left to show is that for all $\epsilon > 0$, there exists a simple and integral simple function $0 \leq \varphi \leq \psi$ such that,  
+    \begin{equation*}
+      \int \psi - \epsilon = \int \varphi. 
+    \end{equation*}
+    
+    Now recall that by definition the Lebesgue integral of $\psi$ is given by, 
+    \begin{equation*}
+      \int \psi = \sum_{i = 1}^n a_i m(A_i)
+    \end{equation*} 
+    where $a_i$ are distinct real numbers and $A_i$ are pairwise disjoint measurable sets. 
+    So it follows that, 
+    \begin{equation*}
+      \int \psi = \sum_{i = 1}^n a_i m(A_i) - \epsilon = \sum_{i = 1}^n (a_i m(A_i) - \frac{\epsilon}{n}) = \sum_{i = 1}^n (a_i - \frac{\epsilon}{n m(A_i)})m(A_i).
+    \end{equation*}
+    Simply take $b_i = a_i - \frac{\epsilon}{n m(A_i)}$ redefining any non-distinct $b_1, b_2, \dots$ as a single $b_i$, and combining their there associated support $B_i = A_1 \cup A_2 \cup \dots$, otherwise simply take $B_i = A_i$. Note that each $b_i$ is distinct, $B_i$ a union of disjoint measurable sets, and therefore also disjoint and measurable so hence, 
+    \begin{equation*}
+      \varphi = \sum_{i = 1}^{j} b_i \chi_{E_i}
+    \end{equation*}
+    defined a new simple function with the desired Lebesgue integral. Thus 
+    \begin{equation*}
+      \int \psi = \sup\left\{ \int \psi : 0 \leq \varphi \leq \psi, \varphi \text{ simple and integrable}\right\}
+    \end{equation*}
+    \end{proof}
+    I am aware that this problem is immensely simplified, if we recall that the integrals of nonnegative simple functions are monotonic. 
+  \vspace*{.15in}
+
+
+
+
+  \problem \textbf{Carothers 18.3} Prove that $\int_{1}^{\infty}(\frac{1}{x})dx = \infty$ as a Lebesgue integral.
+  \begin{proof} First note that the following is a class of simple and integrable functions which are nonnegative and lie underneath $\frac{1}{x}$, 
+    \begin{equation*}
+      \varphi_n = \sum_{i = 2}^{n}\frac{1}{n} \chi[i - 1, i]. 
+    \end{equation*}
+    Now by definition we know that, 
+    \begin{equation*}
+      \int_{1}^{\infty}\frac{1}{x}dx = \sup\left\{ \int\varphi  : 0 \leq \varphi \leq \frac{1}{x}, \varphi \text{ simple and integrable}\right\}
+    \end{equation*}
+    So clearly it should follow that, 
+    \begin{equation*}
+      \int_{1}^{\infty}\frac{1}{x}dx \geq \sup\left\{ \int\varphi_n  : 0 \leq \varphi_n \leq \frac{1}{x}, \varphi_n \text{ as previously defined}\right\}
+    \end{equation*}
+    However we find that, 
+    \begin{equation*}
+      \lim_{n \to \infty} \int \varphi_n = \lim_{n \to \infty} \sum_{i = 2}^n \frac{1}{n} = \infty.
+    \end{equation*}
+    So we conclude that $\int_{1}^{\infty}\frac{1}{x}dx = \infty$ as desired. 
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+
+
+
+
+
+
+
+
+  \problem \textbf{Carothers 18.4} Find a sequence $(f_n)$ of nonnegative measurable function such that $\lim_{n \to \infty} f_n = 0$, but $\lim_{n \to \infty} \int f_n = 1$. In fact, show that $(f_n)$ can be chosen to converge uniformly to 0.  
+  \begin{proof} Consider the sequence of simple functions, 
+    \begin{equation*}
+      f_n = \frac{1}{n}\chi_{[0, n]}
+    \end{equation*}
+    Clearly the pointwise limit of $f_n$ is zero, but since $\int f_n = 1$ for all $n$ we get that,
+    \begin{equation*}
+      \lim_{n \to \infty} \int \frac{1}{n}\chi_{[0, n]} = 1.
+    \end{equation*}
+    Now let $\epsilon > 0$ and note that we can choose $N$ such that $\frac{1}{N} < \epsilon$ and for all $n \geq N$ and for all $x$ we get, 
+    \begin{equation*}
+      \abs{\frac{1}{n} \chi_{[0, n]}(x)} \leq \frac{1}{n} < \epsilon. 
+    \end{equation*}
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+% For a counter example use an  infinite step function where the the step is moving to the right
+  \problem \textbf{Carothers 18.6} Suppose that $f$ and $(f_n)$ are nonnegative measurable functions, that $(f_n)$ decreases pointwise to $f$, and that $\int f_k < \infty$ for some $k$. Prove that $\int f = \lim_{n \to \infty} \int f_n$.[Hint: Consider $(f_k - f_n)$ for $n > k$.] Give an example showing that this fails without the assumption that $\int f_k < \infty $ for some $k$. 
+  \begin{proof} Suppose that $f$ and $(f_n)$ are nonnegative measurable functions, that $(f_n)$ decreases pointwise to $f$, and that $\int f_k < \infty$ for some $k$.
+    
+    First let $g_n = \chi_E(f_k - f_n)$ for all $n > k$ where $E = \{f_k < \infty\}$, note that $g_n$ are measurable, since $(f_n)$ and $\chi_E$ are measurable. Note that since $f_n \geq f_{n + 1} \geq f \geq 0$ we get that $g_n = \chi_E(f_k - f_n) \leq \chi_E(f_k - f_{n+ 1}) = g_{n + 1}$  and hence $g_n$ is an increasing sequence of nonnegative measurable functions. Also note that $\int (\chi_Ef_k - \chi_Ef_n) = \int \chi_Ef_k - \chi_E\int f_n$ since $f_k$ and $f_n$ are nonnegative measurable functions. So applying the Monotone Convergence Theorem we get, 
+    \begin{align*}
+      \int \left(\lim_{n \to \infty} g_n\right) &= \lim_{n \to \infty} \int g_n\\
+      \int \left(\lim_{n \to \infty} \chi_E (f_k - f_n)\right) &= \lim_{n \to \infty} \int \chi_E(f_k - f_n)\\
+      \int \left(\lim_{n \to \infty}  \left(\chi_Ef_k - \chi_E f_n\right)\right) &= \lim_{n \to \infty} \left(\int \chi_Ef_k - \chi_Ef_n\right)\\
+      \int \lim_{n \to \infty}\chi_Ef_k - \lim_{n \to \infty}\chi_Ef_n &= \lim_{n \to \infty} \left(\int \chi_Ef_k - \int \chi_Ef_n\right)\\
+      \int \chi_E f_k - \chi_E f &= \lim_{n \to \infty} \int \chi_E f_k - \lim_{n \to \infty} \int \chi_E f_n\\
+      \int \chi_E f_k - \chi_E f &= \int \chi_E f_k - \lim_{n \to \infty} \int \chi_E f_n
+    \end{align*}
+Now since $f$ and $f_n$ are all integrable, $m(E^c) = 0$ and therefore $\int \chi_Ef = \int f$ and $\int \chi_E f_n = \int f_n$
+    So we conclude that  $\int f = \lim_{n \to \infty} \int f_n$. 
+    \end{proof}
+
+    \begin{proof} For an example where this result fails without the assumption that $\int f_k < \infty$ for some $k$ consider the sequence of functions $f_n = \chi_{[n, \infty]}$. Clearly this converges pointwise to zero, so $\int f = 1$ however $\int f_n = \infty$ for all $n$. 
+        \end{proof}
+    \vspace*{.15in}
+
+
+
+
+
+
+
+    \problem \textbf{Carothers 18.9} Let $f$ be measurable with $f > 0$ a.e. and $f$ is nonnegative. If $\int_E f = 0$ for some measurable set $E$, show that $m(E) = 0$. 
+    \begin{proof} Let $f$ be measurable with $f > 0$ a.e and suppose that $\int_E f = 0$ for some measurable set $E$. Note that since $f$ is measurable 
+      \begin{equation*}
+        \int_E f = \int_E f_+ - \int_E f_- = \int \chi_E f_+ - \int \chi_E f_-
+      \end{equation*}
+      Now since $f > 0$ a.e we know that $m(\{f \leq 0\}) = 0$ and therefore $m(E \cap \{f \leq 0\}) = 0$ and thus, 
+      \begin{equation*}
+        \int_{E \cap \{f \leq 0\}}f =\int \chi_E f_- = 0.
+      \end{equation*}
+      Hence,
+      \begin{equation*}
+        \int_E f = \int \chi_E f_+ = 0
+      \end{equation*}
+      Note that $\chi_E f_+$ is nonnegative and measurable with $\int \chi_E f_+ = 0$ so by Corollary 18.10 we know that $\chi_E f_+ = 0$ and since $f > 0$ a.e. it must follow that $m(E \cap \{f \geq 0\}) = 0$. Now note that $E \cap \{f \geq 0\}$ and $E \cap \{f \leq 0\}$ are disjoint and $E = E \cap \{f \geq 0\} \cup E \cap \{f \leq 0\}$, we find that, 
+      \begin{equation*}
+        m(E) = m(E \cap \{f \geq 0\}) + m(E \cap \{f \leq 0\}) = 0. 
+      \end{equation*}
+    \end{proof}
+    \vspace*{.15in}
+
+
+
+
+
+
+
+    \problem \textbf{Carothers 18.11} If $f$ is nonnegative and integrable, show that $\int_{-\infty}^\infty f = \lim_{n \to \infty}\int_{f \leq n}f$.
+    \begin{proof} Let $f$ be nonnegative and integrable, and note that by Chebyshev's inequality we know that $m\{f > n\} \leq \frac{1}{n} \int f$ holds for all $n$, so it follows that $m(\{f = \infty\}) = 0$. 
+      
+      %Now again consider the support of $f$, which since $f$ is nonnegative we can take to be $\{f > 0\}$, can be expressed by the following union of sets with finite measure, 
+      %\begin{equation*}
+      %  \{f > 0\} = \cup_{n = 1}^\infty \{f \geq (\frac{1}{n})\},
+      %\end{equation*}
+      %we know that each $ \{f \geq (\frac{1}{n})\}$ has finite measure by Chebyshev's inequality 
+      %which gives $m(f \geq (\frac{1}{n})) \leq n \int f < \infty$ since $f$ is integrable. 
+      
+      Now note that the support of $f$ can be expressed as the following limit, 
+      \begin{equation*}
+        \{f > 0\} = \left(\lim_{n \to \infty} \{f \leq n\}\right) \cup \{f = \infty\}
+      \end{equation*}
+      Now as we have shown $f$ is finite a.e, so the limit of our integral can be rewritten, 
+      \begin{equation*}
+        \int_{-\infty}^\infty f  = \lim_{n \to \infty} \int_{f \leq n} f + \int_{\{f = \infty\}}f = \lim_{n \to \infty} \int_{f \leq n} f. 
+      \end{equation*}
+    \end{proof}
+    \vspace*{.15in}
+
+
+
+    \problem Let $f \geq 0$ be Riemann integrable. In this exercise you will show that $f$ is measurable. In your work, you are welcome to use the obvious fact that the Riemann integral and the Lebesgue integral agree for step functions. 
+    \begin{enumerate}
+      \item[\textbf{(a)}] Show that there exists a monotone increasing sequence of step function $\varphi_n$ and a monotone decreasing sequence of step function $\psi_n$ such that $\varphi_n \leq f \leq \psi_n$ for each $n$ and such that, 
+      \begin{equation*}
+        (R)\int_a^b (\psi_n - \varphi_n) \to 0.
+      \end{equation*}
+      \begin{proof} Let $f \geq 0$ be Riemann integrable. Recall that from Prop 5 of the Riemann Integral notes, we can construct a sequence of step function $\varphi_n$ and $\psi_n$, not necessarily decreasing or increasing such that $\varphi_n \leq f \leq \psi_n$ and,
+        \begin{equation*}
+          (R)\int_a^b (\psi_n - \varphi_n) < \frac{1}{n}.
+        \end{equation*}
+        Now construct new sequences $\varphi'_n,\psi'_n$ such that $\varphi'_1 = \varphi_1$ and $\psi'_1 =\psi_1$ with the following, 
+        \begin{equation*}
+          \varphi'_n = \max\{\varphi'_{n - 1}, \varphi_n\},
+        \end{equation*}
+        \begin{equation*}
+          \psi'_n = \min\{\psi'_{n - 1}, \psi_n\}.
+        \end{equation*}
+        Clearly $\varphi'_n$ and $\psi'_n$ continue to be sequences of step functions, and now $\varphi'_n$ is monotone increasing, and $\psi'_n$ is monotone decreasing. Since $\varphi'_n \geq \varphi_n$ and $\psi'_n \leq \psi_n$ it follows that, 
+        \begin{equation*}
+          (R)\int_a^b (\psi'_n - \varphi'_n) \leq (R)\int_a^b (\psi_n - \varphi_n) < \frac{1}{n}.
+        \end{equation*}
+        Hence, 
+        \begin{equation*}
+          (R)\int_a^b (\psi'_n - \varphi'_n) \to 0.
+        \end{equation*}
+      \end{proof}
+    \vspace*{.15in}
+
+
+
+
+
+      \item[\textbf{(b)}] Let $\Phi = \sup \varphi_n$ and $\Psi = \inf \phi_n$. Show that $\Psi -\Phi = 0$ almost everywhere. 
+      \begin{proof} Let $\Phi = \sup \varphi_n$ and $\Psi = \inf \psi_n$. Note that since $\varphi_n \leq f \leq \psi_n$, and $f$ is a Riemann integrable function which is also bounded, we know that $\Psi$ and $\Phi$ are both bounded, we have also shown that the $\inf$ and $\sup$ on sets of measurable functions, results in a measurable function, therefore the following integral is well defined,
+        \begin{equation*}
+          \int \Psi - \Phi =  \int \lim_{n \to \infty} \psi_n - \lim_{n \to \infty} \varphi_n =  \int \lim_{n \to \infty} \psi_n - \varphi_n = \int \chi_{[a, b]^c}\lim_{n \to \infty} \psi_n - \varphi_n +  \int_a^b \lim_{n \to \infty} \psi_n - \varphi_n.
+        \end{equation*}
+        Since our step functions are defined on $[a, b]$ it follows that, 
+        \begin{equation*}
+          \int \chi_{[a, b]^c}\lim_{n \to \infty} \psi_n - \varphi_n  = 0.
+        \end{equation*}
+        So finally since $\psi_n - \varphi_n$ is a nonnegative measurable function we know, 
+        \begin{equation*}
+          \int \Psi - \Phi =  \int_a^b \lim_{n \to \infty} \psi_n - \varphi_n = \lim_{n \to \infty} \int_a^b  \psi_n - \varphi_n = 0.
+        \end{equation*}
+        Hence $\Psi - \Phi = 0$ almost everywhere. 
+      \end{proof}
+
+
+
+      \item[\textbf{(c)}] Conclude that $f$ is measurable. 
+      \solution From the previous result it also follows that $\sup \varphi_n = \inf \psi_n$ almost everywhere and by construction we know that $\sup \varphi_n \leq f \leq \inf \psi_n$ everywhere, so $\sup \varphi_n = f = \inf \psi_n$ almost everywhere and since $\sup \varphi_n$ and $\inf \psi_n$ are measurable we know that $f$ is measurable. 
+    \end{enumerate}
+
+
+    \problem \textbf{Carothers 18.16} Let $f$ be nonnegative and integrable. Given $\epsilon > 0$, show that there is a measurable set $E$ with $m(E) < \infty$ such that $\int_E f > \int f - \epsilon$. Moreover, show that $E$ can be chosen so that $f$ is bounded (above) on $E$. 
+    \begin{proof} Let $f$ be nonnegative and integrable. Construct the following measurable sets $E_k = \{f \geq k\}$, and note that by definition $f$ is bounded on $E_k^c$. Let $\epsilon > 0$ and consider the following functions $\chi_{E_k^c}f$. Firstly note that since $f$ is nonnegative $\chi_{E_k^c}$ is a nonnegative sequence of functions. Since $E_k^c = \{f < k\}$ we find that $E_k^c \subseteq E_{k+1}^c$ and therefore $\chi_k^c f \leq \chi_{k+1}^cf$. Observe that $\chi_{E^c_{k}}f \to f$ pointwise a.e. and therefore by the monotone convergence theorem we find that there exists a $k$ such that, 
+      \begin{equation*}
+        \int_{E^c_k}f \geq \int f - \frac{\epsilon}{2}.
+      \end{equation*}
+      Now consider the following measurable sets, $A_n = E^c_k \cap [-n, n]$. Again clearly $\chi_{A_n}f \to \chi_{E^c_k}f$ pointwise increasing e.a. so by the monotone convergence theorem there exists an $n$ such that, 
+      \begin{equation*}
+        \int_{A_n} f \geq \int_{E^c_k}f - \frac{\epsilon}{2}. 
+      \end{equation*}
+      By substitution we conclude that, 
+      \begin{equation*}
+        \int_{A_n} f \geq \int_{E^c_k}f - \frac{\epsilon}{2} \geq \int f - \epsilon. 
+      \end{equation*}
+    \end{proof}
+    \vspace*{.15in}
+
+
+
+    \problem \textbf{Carothers 18.17} If $f$ is nonnegative and integrable, prove that the function $F(x) = \int_{-\infty}^x f$ is continuous. In fact, even more is true: Given $\epsilon > 0$, show that there is a $\delta > 0$ such that $\int_E f < \epsilon$ whenever $m(E) < \delta$. [Hint: This is easy if $f$ is bounded; see Exercise 16]
+    \begin{proof}Let $f$ be nonnegative and integrable and also let $\epsilon > 0$. By the previous problem there exists a measurable set $E$ with $m(E) < \infty$, $\int_E f > \int f - \epsilon$ and there exists some constant $K$ such that $K \geq f$ on $E$.
+      Now choose $\delta$ such that $\delta K < \epsilon $ and note that if $0 \leq |x - y| \leq \delta$ it follows that, 
+      \begin{align*}
+        \abs{F(x) - F(y) } &= \abs{\int \chi_{(x, y]} f}\\
+        &= \int \abs{\chi_{(x, y]} f}\\
+        &< \int_E \abs{\chi_{(x, y]} f} + \epsilon < \delta K + \epsilon < 2\epsilon.
+      \end{align*}      
+    \end{proof}
+
+
+
+    \begin{proof} If $f$ is nonnegative and integrable, let $\epsilon > 0$ and by the previous problem there exists a set $E$ such that $\int_E f > \int f - \frac{\epsilon}{2}$, with $m(E)< \infty$, and $f \leq K$ on $E$. Now let $A$ be a set such that $m(A) < \delta$ with $\delta K < \frac{\epsilon}{2}$. Now note that, 
+      \begin{equation*}
+        \int_A f = \int_{A \cap E^c}f + \int_{A \cap E} f. 
+      \end{equation*}
+      Also note, 
+      \begin{align*}
+        \int_E f &> \int f - \frac{\epsilon}{2},\\
+        \int_E f &> \int_E f + \int_{E^c} f - \frac{\epsilon}{2},\\
+        \frac{\epsilon}{2} &> \int_{E^c} f.
+      \end{align*}
+      Finally we conclude that, 
+      \begin{equation*}
+        \int_A f = \int_{A \cap E^c}f + \int_{A \cap E} f < \frac{\epsilon}{2} + \delta K < \epsilon.
+      \end{equation*}
+    \end{proof}
+    \vspace*{.15in}
+
+
+
+
+
+
+
+
+
+
+\end{problems}
+\end{document}

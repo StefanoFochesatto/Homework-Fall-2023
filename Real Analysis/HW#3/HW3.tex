@@ -1,0 +1,350 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}{\text{diam}}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework 3}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+\begin{problems}
+
+
+% Recall how the heck we define an element in delta.
+% x \in Delta if and only if x can be written as \sum_{n = 1}^{\infty} \frac{a_n}{3^n}. 
+% where each a_n is either a 0 or a 2. 
+
+%Done
+\problem \textbf{Carothers 3.18} Show that $||x||_{\infty} \leq ||x||_{2} \leq ||x||_1$ for any $x \in \RR^n$. Also check that $||x||_1 \leq n||x||_{\infty}$ and $||x||_1 \leq \sqrt{n}||x||_2$. 
+\begin{proof} Suppose $x \in \RR^n$ and recall that by definition it clearly follows that, 
+  \begin{equation*}
+    ||x||_{\infty} = \max_{1 \leq i \leq n}|x_i| \leq \left(\sum_{i = 1}^n x_i^2\right)^{1/2} = ||x||_2.
+  \end{equation*}
+  Also note that, 
+  \begin{equation*}
+    ||x||_1^2 = \sum_{i = 1}^n |x_i|\sum_{i = 1}^n |x_i| = \sum_{i = 1}^n |x_i|^2 + \sum_{i \neq j} |x_i||x_j| \geq ||x||_2^2.
+  \end{equation*}
+  Since $\sqrt{x}$ is a monotone function we can conclude that $||x||_{2} \leq ||x||_1$. 
+
+  Note that,
+  \begin{equation*}
+    ||x||_1  = \sum_{i = 1}^n |x_i| \leq n \max_{1 \leq i \leq n}|x_i| = n||x||_{\infty}.
+  \end{equation*}
+
+  Finally by Cauchy-Schwarz Inequality we get the following, 
+  \begin{equation*}
+    ||x||_1 = \sum_{i = 1}^n |x_i|= \sum_{i = 1}^n |x_i 1_i|\leq ||1||_2||x||_2= \sqrt{n}||x||_2.
+  \end{equation*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+\problem \textbf{Carothers 3.23} The subset of $\ell_{\infty}$ consisting of all sequences that converge to 0 is denoted by $c_0$. Show that we have the following proper set inclusions: $\ell_1 \subset \ell_2 \subset c_0 \subset \ell_\infty$ 
+\begin{proof} Let $(x_n) \in \ell_1$. Note that by definition it follows $|x_n| \to 0$, since $x^2$ is a monotone over positive reals it follows that $|x_n|^2 = x_n^2 \to 0$. Hence $(x_n) \in \ell_2$. It follows similarly that since $\sqrt(x)$ is monotone $x_n \to 0$ and therefore $(x_n) \in c_0$. 
+
+
+To show that these are proper subset relations, consider the sequence $x_n = \frac{1}{n}$. Note that $||x_n||_1$ is a harmonic series so $x_n \not\in \ell_1$ but $||x_n||_2$ is a convergent $p$-series, so $x_n \in \ell_2$. 
+
+Similarly we see that $x_n = \frac{1}{\sqrt{n}}$ makes $||x_n||_2$ into a harmonic series so $x_n \not\in \ell_2$ but again $x_n$ alone is a bounded convergent sequence. 
+
+Finally consider a constant sequence of 1s, which is bounded and therefore contained in $\ell_{\infty}$ yet it doesn't converge to zero so it's not in $c_0$. 
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+
+%Done
+\problem \textbf{Young's Inequality} Let $p \in (1, \infty)$ and define $q$ by $\frac{1}{p} + \frac{1}{q} = 1$. Suppose $a, b \geq 0$. Show, 
+\begin{equation*}
+  ab \leq \dfrac{a^p}{p} + \dfrac{b^q}{q}
+\end{equation*} 
+and that the inequality is strict unless either $a^{p - 1} = b$ or $b^{q - 1} = a$. 
+\begin{proof}  Let $p \in (1, \infty)$ and define $q$ by $\frac{1}{p} + \frac{1}{q} = 1$ and suppose $a, b \geq 0$. Note that to Young's inequality it is equivalent to show that the following inequality for a function $f(a, b)$ over a domain $a, b \geq 0$, 
+  \begin{equation*}
+    f(a, b) = ab - \dfrac{a^p}{p} - \dfrac{b^q}{q} \geq 0.   
+  \end{equation*}
+We fix $b \in [0, \infty)$ and proceed to find $f'$ and $f''$,
+\begin{equation*}
+  f'(a) = b - a^{p - 1},
+\end{equation*}
+\begin{equation*}
+  f''(a) =  - (p - 1)a^{p - 2}. 
+\end{equation*}
+Note that since $p \in (1, \infty)$ and $a \in [0, \infty)$ it follows that $f''(a) \leq 0$ on our domain and therefore any critical point is a maximum. 
+Setting $f'(a) = 0$ we get that $a = b^{\frac{1}{p - 1}}$. Now to prove our inequality holds, it is sufficient to show that $f( b^{\frac{1}{p - 1}}) \leq 0$, 
+\begin{align*}
+  f( b^{\frac{1}{p - 1}}) &= b^{\frac{q}{p} + 1} - \left(\dfrac{b^q}{p} + \dfrac{b^q}{q}\right)\\
+  &= b^{\frac{q}{p} + 1} - b^q\left(\dfrac{1}{p} + \dfrac{1}{q}\right)\\
+  &= b^{q - 1 + 1} - b^q\\
+  &= 0
+\end{align*}
+
+
+
+  
+\end{proof}
+
+
+%Done
+\problem \textbf{Carothers 3.34} if $x_n \to x$ in $(M, d)$, show that $d(x_n, y) \to d(x,y)$ for any $y \in M$. More generally, if $x_n \to x$ and $y_n \to y$, show that $d(x_n, y_n) \to d(x, y)$
+\begin{proof} Suppose $x_n \to x$ in $(M, d)$. By definition, for $\epsilon > 0$ there exists an $N$ such that for all $n \geq N$, implies $d(x_n,x) < \epsilon$. Now let $y \in M$ and consider that by the triangle inequality we get the following, 
+  \begin{align*}
+    d(x_n, y) - d(x, y) &\leq (d(x_n, x) + d(x, y)) - d(x, y),\\
+    &= d(x_n, x),\\
+    &< \epsilon.
+  \end{align*}
+Hence $d(x_n, y) \to d(x,y)$.
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+%Done
+\problem \textbf{Carothers 3.36} A convergent sequence is Cauchy, and a Cauchy sequence is bounded (that is, the set $\{x_n : n \geq 1\}$ is bounded).  
+
+\begin{proof} Suppose $x_n \subseteq M$ with metric $d$ and $x_n \to x$. Let $\epsilon > 0$ then there exists an $N$ such that for all $n \geq N$, we have that $d(x_n, x) < \frac{\epsilon}{2}$. Let $m \geq N$, by the triangle inequality it follows that, 
+  \begin{align*}
+    d(x_n, x_m) &\leq d(x_n, x) + d(x_m, x),\\
+    &\leq d(x_n, x) + d(x_m, x),\\
+    &< \epsilon.
+  \end{align*}
+\end{proof}
+
+
+%Done
+\begin{proof} Suppose that $x_n \in M$ with metric $d$ and $(x_n)$ is Cauchy. Since $(x_n)$ is Cauchy there exists some $N$ such that for all $m, n \geq N$ it follows that $d(x_n, x_m) < 1$. Let $c \in M$, $m \geq n$, and note that,
+  \begin{align*}
+    d(c, x_n) &\leq d(c, x_m) + d(x_m, x_n),\\
+    &< \max\{d(c, x_i): 1 \leq i \leq m\} + 1.
+  \end{align*}
+  Let $R = \max\{d(c, x_i): 1 \leq i \leq m\} + 1$ and note that $x_n \subseteq B_R(c)$. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+%Done
+\problem \textbf{Carothers 3.39} If every subsequence of $(x_n)$ has a further subsequence that converges to $x$, then $(x_n)$ converges to $x$. 
+\begin{proof} Suppose $(x_n) \subseteq M$ with metric $d$ and $x_n \not\to x$. We wish to produce a subsequence of $(x_n)$ whose further subsequences don't converge to $x$. 
+  By definition, there exists an $r>0$, where for every $N$, when $n \geq N$ it follows that $x_n \not\subset B_r(x)$. Since this statement is true for every $N$, there are infinitely many such $x_n \not\in B_r(x)$, so we can construct a subsequence $(x_{n_k})  = \{x_n: x_n \not\in B_r(x)\}$. Clearly any further subsequence will not have a tail in $B_r(x)$ and therefore won't converge to $x$. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+%Done
+\problem \textbf{Carothers 4.3} Show that two metrics are equivalent if they generate the same open sets.  
+\begin{proof} Suppose a space $M$ with two metrics $d_1$ and $d_2$ which generate the same open sets. Let $(x_n) \subseteq M$ such that $x_n \converges{d_1} x$. Let $r > 0$ and note that there exists some $N$ such that for all $n \geq N$ we know that $(x_n) \subseteq B^1_r(x)$. Since $d_1$ and $d_2$ generate the same open sets it follows that for all $n \geq N$ we know that $(x_n) \subseteq B^2_r(x)$, hence  $x_n \converges{d_2} x$. 
+\end{proof}
+
+
+
+\begin{proof} Suppose a space $M$ with two metrics $d_1$ and $d_2$ such that for every $(x_n) \subseteq M$
+ it follows that $x_n \converges{d_1} x$ and $x_n \converges{d_2} x$. Let $A$ be a closed set with respect to $d_1$. Let $(x_n) \subseteq A$ such that $x_n \converges{d_2} x$, by our hypothesis it follows that $x_n \converges{d_1} x$ and since $A$ is closed with respect to $d_1$ we know that $x \in A$. Hence $A$ is closed with respect to $d_2$. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+%Done
+\problem \textbf{Carothers 4.11} Let $e^{(k)} = (0, \dots, 0, 1, 0, \dots)$, where the $k$th entry is 1 and the rest are 0s. Show that $A = \{e^{(k)}: k \leq 1\}$ is closed as a subset of $\ell_1$. 
+\begin{proof} Let $e^{(k)} = (0, \dots, 0, 1, 0, \dots)$, where the $k$th entry is 1 and the rest are 0s. Suppose $(x_n) \subset A$ with $x_n \to x$ and therefore also Cauchy. By definition, for all $\epsilon > 0$ there exists an $N$ such that for all $m, n \geq N$ we have, 
+  \begin{equation*}
+    d(x_m, x_n) = ||x_m - x_n||_1 < \epsilon.
+  \end{equation*}
+    Let $a = x_m - x_n$ and therefore it follows that, 
+  \begin{equation*}
+    \sum_{i = 1}^\infty |a| < \epsilon. 
+  \end{equation*}
+  Note $|a|$ can either be a sequence of all zeros, or a sequence with exactly two 1s. It must follow that $|a_i|$ is a sequence of all zeros, otherwise $||a|| = 2 \not< \epsilon$. Hence $x_n = x_m$ and the sequence converges to 
+  a constant sequence in $A$. 
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+
+
+\end{problems}
+\end{document}

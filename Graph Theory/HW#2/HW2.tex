@@ -1,0 +1,202 @@
+% !TEX TS-program = pdflatexmk
+\documentclass[12pt]{article}
+
+\usepackage{pgf,tikz}
+\usetikzlibrary{arrows}
+
+% Layout.
+\usepackage[top=.75in, bottom=0.75in, left=.75in, right=.75in, headheight=1in, headsep=6pt]{geometry}
+\usepackage{subfig}
+% Fonts.
+\usepackage{mathptmx}
+\usepackage[scaled=0.86]{helvet}
+\renewcommand{\emph}[1]{\textsf{\textbf{#1}}}
+
+% Misc packages.
+\usepackage{amsmath,amssymb,latexsym}
+\usepackage{graphicx,tikz}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{tabularx,colortbl}
+\usepackage{amsthm}
+\usepackage{enumitem}
+%to make tikz pics work
+\usepackage{tikz,pgfplots}
+\usepackage{float}
+\newcommand\solution{\localhead{Solution:}}
+
+\usepackage[colorlinks=true]{hyperref}
+
+% Paragraph spacing
+\parindent 0pt
+\parskip 6pt plus 1pt
+\def\tableindent{\hskip 0.5 in}
+\def\ts{\hskip 1.5 em}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy} 
+\lhead{\large\sf\textbf{MATH 663 }}
+\rhead{\large\sf\textbf{Fall 2023}}
+\chead{\large\sf\textbf{HW 2}}
+
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+\def\heading#1{\localhead{\large\emph{#1}}}
+\def\subheading#1{\localhead{\emph{#1}}}
+
+%% Special Math Symbol shortcuts
+\newcommand{\rad}{\text{rad}}
+\newcommand{\diam}{\text{diam}}
+\newcommand{\circumference}{\text{circ}}
+
+\newcommand{\NN}{\mathbb{N}}
+
+%\newenvironment{clist}%
+%{\bgroup\parskip 0pt\begin{list}{$\bullet$}{\partopsep 4pt\topsep 0pt\itemsep -2pt}}%
+%{\end{list}\egroup}%
+
+\usetikzlibrary{calc}
+%\pgfplotsset{my style/.append style={axis x line=middle, axis y line=
+%middle, xlabel={$x$}, ylabel={$y$}, axis equal }}
+
+
+\begin{document}
+\begin{enumerate}
+% If I delete any one vertex, G is still connected. 
+	\item Show that every 2-connected graph contains a cycle.\\ 
+	\begin{proof} Let $G$ be a 2-connected graph and consider vertex $x$. Note that since $G$ is 2-connected $x$ must have at least two neighbor $y, z$, otherwise removal of the single neighbor would disconnect $x$ from he graph. Note $G - x$ is connected, so let $yPz$ be the path in $G - x$. Clearly we can form a cycle with $yPz$ and $x$. 
+
+	\end{proof}
+	\vspace{.5in}
+
+
+
+
+	\item Determine $\kappa(G)$ and $\lambda(G)$ for $G = P^m, C^n, K^n, K_{m, n}$ and the $n$-dimensional cube. \\
+	\begin{proof} For $P^m$, a path on $m$ vertices is clearly $\kappa(P^m) = \lambda(P^m) = 1$. Removal of any vertex or edge disconnects the graph. 
+	\end{proof}
+
+	\begin{proof} For $C^n$, a cycle on $n$ vertices. Note that the removal of any edge or vertex from $C^n$ results in a graph that is still connected. Removal of any two edges, will disconnect the graph, and removal of any two non-adjacent vertices will disconnect the graph. Therefore $\kappa(C^n) = \lambda(C^n) = 2$
+	\end{proof}
+
+
+	\begin{proof} For a $K^n$ note that the removal of any vertex from a graph results in a $K^{n - 1}$ which is clearly still connected. Since a $K^1$ is defined as being disconnected we conclude that $\kappa(K^n) = n - 1$. Since $\kappa(K^n) \leq \lambda(K^n) \leq \delta(K^n)$ and $\delta(K^n) = n-1$ it must follow that $\lambda(K^n) = n - 1$. 
+	\end{proof}
+
+	\begin{proof} For a $K_{m, n}$ and suppose $m \leq n$. Note that for the smaller partition we can remove at most $m - 1$ vertices and still be a connected $K_{1, n}$ graph (a star graph). Removing the last vertex disconnects the graph, therefore $\kappa(K_{m, n}) = m - 1$. Note that $\delta(K_{m, n}) = m$ and removing $m$ edges from an $m$ partition vertex will disconnect the graph, so $\lambda(K_{m, n}) = m - 1$.
+	\end{proof}
+
+
+
+	\begin{proof} For the case where $G_d$ is a  $d$-dimensional cube first note that by definition it is $d$ regular and therefore $\delta(G_d) = d$. We will proceed to show that $\kappa(G) = d$ by induction. 
+
+		Let $G_1$ be a 1-dimensional cube. Clearly it can be made into a $K^1$ by removing a single vertex. Hence $\kappa(G) = 1$.
+
+		Let $G_n$ be an $n$-dimensional cube and recall that by a similar construction from homework 1 we can construct $G_n$ from two copies of $G_{n - 1}$. Now suppose $A$ is some minimal disconnecting set. Clearly $|A| \leq n$ as $G_n$ is $n$-regular. 
+		
+		
+		If $A$ is contained inside a $G_{n - 1}$ subgraph we know that 
+		removing $n - 1$ vertices disconnects the subgraph into two components, yet each of those components is adjacent to the other $G_{n - 1}$ subgraph in $G_n$.
+		Therefore to form a disconnection with vertices in an $G_{n - 1}$ subgraph $|A| > n - 1$.
+
+
+		Note that $A$ must be contained in some $G_{n - 1}$ subgraph. Suppose $A$ is not contained in a $G_{n - 1}$ subgraph, then it follows that $A$ has some vertices 
+		in both $G_{n - 1}$ but not enough in either to form a disconnection because 
+		$n + 1 < |A \cap G_{n - 1}| < n$. Therefore a disconnection has to be formed by 
+		disconnecting the $G_{n - 1}$ subgraphs. To do so $|A| = 2^n \leq n$ a contradiction. 
+
+		Therefore we conclude that $n - 1 < |A|\leq n$ and that $\kappa(G_n) = n$. 
+		Since $\kappa(G_n) \leq \lambda(G_n) \leq \delta(G)$  it follows that $\lambda(G) = n$. 
+	
+
+		p.s. This is terrible and I hate this but I couldn't find a slicker way. 
+		\end{proof}
+
+
+
+
+	\vspace{.5in}
+
+
+
+
+
+
+
+
+
+	\item  Is there a function $f: \NN \to \NN$ such that, for all $k \in \NN$, every graph of minimum degree at least $f(k)$ is $k$-connected?\\
+	\begin{proof} I assert that such a function does not exists. Consider a function $f: \NN \to \NN$, and 
+		some $k \in \NN$. We want to show that there exists a graph of minimum degree greater than or equal to $f(k)$ that is not $k$-connected. Note that a graph $G$ defined by two disjoint copies $K^{f(k) + 1}$ is such a graph. 
+	\end{proof}
+	\vspace{.5in}
+
+
+
+	\item Prove that for every non-complete, connected graph $G$, if $F \subseteq E(G)$ is a separating set of edges of minimum order (i.e. $|F| =  \lambda(G)$), then $G - F$ has exactly two components.\\
+	\begin{proof} Let $G$ be a non-complete, connected graph and suppose $F \subseteq E(G)$ is a separating set of edges such that $|F| =  \lambda(G)$.
+	Let $e \in F$ such that $x, y$ are incident to $e$. Note that $G - F + e$ must be connected because $|F| = \lambda(G)$. Removing $e$ must disconnect the graph into exactly two components. Any less and it would still be connected and any more and $G - F + e$ wouldn't have been connected. 
+	\end{proof}
+	\vspace{.5in}
+
+
+	\item  Prove Theorem 1.5.1\\
+	
+	The following are equivalent for a graph $T$
+	\begin{enumerate}
+		\item[\textbf{(a)}] $T$ is a tree. 
+		\item[\textbf{(b)}] Any two vertices of $T$  are linked by a unique path. 
+		\item[\textbf{(c)}] $T$ is minimally connected. 
+		\item[\textbf{(d)}] $T$ is maximally acyclic. 
+	\end{enumerate}
+
+
+	\begin{proof}$(a \to b)$ Suppose $T$ is a tree and let $x, y \in V(T)$. Note that since $T$ is connected 
+		there exists a path $P$ between them. For the sake of contradiction suppose there exists another such path $P'$.
+		Note that the set of vertices $V(P)\cap V(P') \setminus V(P)\cup V(P')$ and it's neighbors in $P$ form a cycle in $T$, a contradiction. 
+	\end{proof}
+
+
+	\begin{proof}$(b \to c)$ Suppose any two vertices of $T$ are linked by a unique path. Let $e \in E(T)$. Let $e$ be incident to vertices $x$ and $y$. We know that the only path between $x$ and $y$ goes through $e$ and therefore $T - e$ is disconnected. Hence $T$ is minimally connected. 
+	\end{proof}
+
+
+
+	\begin{proof}$(b \to d)$ Suppose any two vertices of $T$ are linked by a unique path. Let $x, y \in V(T)$ are non-adjacent and $P$ the unique path with which they are connected. Consider an edge $e$ incident to $x$ and $y$. Note $P + e$ will form a cycle in $T$, hence $T$ is maximally connected. 
+	\end{proof}
+
+
+	\begin{proof}$(c \to a)$ Suppose $T$ is minimally connected.
+		Suppose for the sake of contradiction that $T$ has a cycle. Removing an edge from the cycle would still result in a connected graph, a contradiction. Hence $T$ is a tree. 
+	\end{proof}
+
+	\begin{proof}$(d \to a)$ Suppose $T$ is maximally acyclic.
+		Suppose for the sake of contradiction that $T$ is disconnected. Then there exists at least two acyclic components, and connecting them via an edge would not produce a cycle, a contradiction. Hence $T$ is a tree. 
+	\end{proof}
+
+
+
+
+
+
+	\vspace{.5in}
+
+
+	\item Let $F$ and $F'$ be forests on the same vertex set such that $||F||< ||F'||$. Show that $F'$ has an edge $e$ such that $F + e$ is still a forest.\\ 
+	\begin{proof} Suppose $F$ and $F'$ are forests on the same vertex set such that $||F||< ||F'||$. Note that $F$ cannot be a tree since it's edge set is not maximal and therefore $F$ has more than 1 component. Let $F$ have $h \geq 2$ components, each with $n_i$ vertices. 
+		Counting the edges of $F$ we get that, 
+		\begin{align*}
+			||F|| &= \sum_{i = 1}^h n_i  - h\\
+			&= n - h
+		\end{align*}
+		Now suppose we partition $F'$ by the components of $F$. For the sake of contradiction suppose no edge exists across partitions. Then there are at most $n_i - 1$ edges in each partition, otherwise we would form a cycle and $F'$ would not be a forest, however summing all the possible edges across each partition gives $n - h$ or $||F||$ edges. Since $||F||< ||F'||$ there must exists an edge $e$, across partitions. Note this edge cannot exists in $F$ and $F + e$ is still acyclic. 
+	\end{proof} 
+	\vspace{.5in}
+
+	
+
+\end{enumerate}
+
+\end{document}
+
+

@@ -1,0 +1,391 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework 4}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+\begin{problems}
+
+
+%Done
+\problem \textbf{Carothers 4.14} Show that the set $A = \{x \in \ell^2: |x_n| \leq 1/n, n = 1, 2, \dots\}$ is a closed set in $\ell_2$ but that $B = \{x \in \ell_2: |x_n|< 1/n, n = 1, 2, \dots\}$ is not an open set.
+\begin{proof} Suppose $(x_n) \subseteq A$ with $x_n \to x$. Let $\epsilon > 0$ and note that there exists some $N$ such that if $n \geq N$ we have, 
+    \begin{equation*}
+   \left(\sum_{k = 1}^{\infty}(x_n(k) - x(k))^2\right)^{\frac{1}{2}} <\epsilon 
+  \end{equation*}
+  Note that for a fixed $k$ we know, 
+  \begin{equation*}
+    |x_n(k) - x(k)| \leq \left(\sum_{i = 1}^{\infty}(x_n(i) - x(i))^2\right)^{\frac{1}{2}} < \epsilon.
+  \end{equation*}
+  Therefore the sequence $(x_n)$ converges term-wise. Recall that by the definition of $A$, for each $k$
+  it follows that $|x_n(k)|\leq \frac{1}{k}$ or equivalently $-\frac{1}{k} \leq x_n(k) \leq \frac{1}{k}$. Since $x_n(k) \to x(k)$ it follows that $-\frac{1}{k} \leq x(k) \leq \frac{1}{k}$, and therefore $|x(k)| \leq \frac{1}{k}$. Hence $x \in A$ and $A$ is therefore closed. 
+\end{proof}
+
+\begin{proof} First note that the $0$ sequence is clearly in $B$. To show that $B$ is not open, we will show that for all $\epsilon > 0$ there exists an $x \in B_\epsilon(0)$ such that $x \not\in B$.
+
+  Let $\epsilon > 0$ and find $n$ such that $\frac{1}{n} < \epsilon$, then construct the sequence 
+  $x$ such that $x(k) = 0$ when $k \neq n$ and $x(k) = \frac{1}{n}$ when $k = n$.
+  Note that, 
+  \begin{equation*}
+    d(0, x) = ||x||_2 = \frac{1}{n} < \epsilon.
+  \end{equation*}
+  Therefore $x \in B_{\epsilon}(0)$, but clearly $|x(n)| = \frac{1}{n}$ and not less than, so $x \not\in B$. Hence $B$  is not open.  
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+%Done Maybe clean up supremum argument in the end. 
+\problem \textbf{Carothers 4.19} Show that $\diam{A} = \diam{\overline{A}}$. 
+\begin{proof} Let $D(A) = \{d(a,b): a, b \in A\}$ and $D(\overline{A}) = \{d(a, b): a, b \in \overline{A}\}$. 
+
+  Let $x \in \overline{D(A)}$. Then by definition there exists a sequence $(d(a, b)_n) \subseteq D(A)$ where $d(a, b)_n \to x$. Choose $(a_n)$ and $(b_n)$
+  in $A$ such that $d(a_n, b_n) = d(a, b)_n$. Since $d$ is a continuous function and $d(a, b)_n \to x$ it follows that $a_n \to a$ and $b_n \to b$ where $d(a, b) = x$. By definition $a ,b \in \overline{A}$ and therefore $x \in D(\overline{A})$. Hence $\overline{D(A)} \subseteq D(\overline{A})$. 
+
+
+  let $x \in D(\overline{A})$. By definition $x = d(a, b)$ where $a, b \in \overline{A}$. Therefore there exists sequences $(a_n)$ and $(b_n)$ in $A$
+  such that $a_n \to a$ and $b_n \to b$. Since $d$ is a continuous function, it follows that $d(a_n, b_n) \to d(a, b) = x$, therefore $x \in \overline{D(A)}$. Thus $D(\overline{A}) \subseteq \overline{D(A)}$.
+
+  Since $\overline{D(A)} = D(\overline{A})$ we know that $D(A)$ and $D(\overline{A})$ have the same limit points and therefore $\sup D(A) = \sup D(\overline{A})$ and hence $\diam{A} = \diam{\overline{A}}$.
+  
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+%Done
+\problem \textbf{Carothers 5.17} Let $f, g: (M, d) \to (N, \rho)$ be continuous, and let $D$ be a dense subset of $M$. If $f(x) = g(x)$ for all $x \in D$, show that $f(x) = g(x)$ for all $x \in M$. If $f$ is onto, show that $f(D)$ is dense in $N$. 
+
+\begin{proof} Let $x \in M$. Since $D$ is dense, $\overline{D} = M$ so we can find a sequence $(a_n) \subseteq D$ such that $a_n \to x$. Since $f$ and $g$ are continuous functions it follows that $g(a_n) \to g(x)$ and $f(a_n) \to f(x)$. Since $(a_n) \subseteq D$ we know that $g(a_n) = f(a_n)$ and since $N$ is a metric space with unique limits, $f(x) = g(x)$.  
+  
+  Now suppose $f$ is onto, let $y \in N$ and therefore there exists some $x \in M$ such that $f(x) = y$. Since $D$ is dense in $M$ there exists a sequence $(a_n) \subseteq D$ which converges $a_n \to x$. Since $f$ is continuous it follows that $f(a_n) \to y$. Note $f(a_n) \subseteq f(D)$ and therefore $N \subseteq \overline{f(D)}$. Clearly $\overline{f(D)} \subseteq N$ so hence $N = \overline{f(D)}$. Thus $f(D)$ is dense in $N$. 
+\end{proof}
+
+
+
+
+
+\vspace*{.15in}
+
+
+
+
+
+\problem \textbf{Carothers 5.19} A function $f: \RR \to \RR$ is said to satisfy a Lipschitz condition if there is a constant $K < \infty$ such that $|f(x) - f(y)| \leq K|x - y|$ for all $x, y \in \RR$. More economically, we may say that $f$ is Lipschitz. Show that $\sin(x)$ is Lipschitz with constant $K = 1$. Prove that a Lipschitz function is (uniformly) continuous. 
+\begin{proof} Since $\sin(x)$ is continuous and infinitely differentiable the mean value theorem applies. 
+  Let $a, b \in \RR$ such that $a < b$ and by the MVT there exists some $c \in (a, b)$ such that,
+  \begin{equation*}
+    \cos(c) = \dfrac{\sin(b) - \sin(a)}{b - a}. 
+  \end{equation*}
+  Taking the absolute value of both sides, we find that 
+  \begin{equation*}
+    |\cos(c)| = \dfrac{|\sin(b) - \sin(a)|}{|b - a|}.
+  \end{equation*}
+  Note that $|\cos(c)| \leq 1$ and therefore by substitution we conclude that, 
+  \begin{equation*}
+    |\sin(b) - \sin(a)| \leq 1|b - a|.
+  \end{equation*}
+\end{proof}
+
+
+\begin{proof} Suppose $f: \RR \to \RR$ is Lipschitz with constant $K$. Let $\epsilon > 0$, $x, y \in \RR$ and choose $\delta = \frac{\epsilon}{K}$. Then when $|x - y| < \delta$ it follows that, 
+  \begin{equation*}
+    |f(x) - f(y)| \leq K|x - y| < K\delta = \epsilon. 
+  \end{equation*}   
+  Since $\delta$ was chosen solely as a function of $\epsilon$, $f$ is uniformly continuous. 
+\end{proof}
+
+
+\vspace*{.15in}
+
+
+
+
+
+
+\problem \textbf{Carothers 5.24} Let $V$ be a normed vector space. If $y \in V$ is fixed, show that the maps $f: \alpha \to \alpha y$ from $\RR$ into $V$, and $g:x \to x + y$, from $V$ into $V$, are continuous. 
+\begin{proof} Let $\alpha \in \RR$ and $(\alpha_n) \subseteq \RR$ such that $\alpha_n \to \alpha$. Let $\epsilon > 0$. Then since $\alpha_n \to \alpha$, choose $N$ such that if $n \geq N$, then $|\alpha_n - \alpha| < \frac{\epsilon}{||y||_2}$, it follows that 
+  \begin{equation*}
+    ||\alpha_ny - \alpha y|| = ||(\alpha_n - \alpha)y|| = |(\alpha_n - \alpha)||\cdot||y|| < \epsilon.
+  \end{equation*}
+  Therefore $f(\alpha_n) \to f(\alpha)$. 
+\end{proof}
+
+\begin{proof} Let $x \in V$ and $(x_n) \subseteq V$ such that $x_n \to x$. Let $\epsilon > 0$. Then since $x_n \to x$, choose $N$ such that $n \geq N$, then $||x_n - x|| < \epsilon$, it follows that
+ 
+  \begin{equation*}
+    ||(x_n + y) - (x + y)|| \leq ||x_n - x|| < \epsilon. 
+  \end{equation*}
+  Therefore $g(x_n) \to g(x)$. 
+  
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+\problem \textbf{Carothers 5.25} A function $f: (M, d) \to (N, \rho)$ is called Lipschitz if there is a constant $k < \infty$ such that $\rho(f(x), f(y)) \leq Kd(x, y)$ for all $x, y \in M$. Prove that a Lipschitz mapping is continuous. 
+\begin{proof} Let $x \in M$ and $(x_n) \subseteq M$ such that $x_n \to x$. Let $\epsilon > 0$. Since $x_n \to x$, choose $L$ such that if $n \geq L$, then $d(x_n, x) \leq \epsilon/k$, it follows that, 
+\begin{equation*}  
+  \rho(f(x_n), f(x)) \leq Kd(x_n, x) < \epsilon. 
+\end{equation*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+\problem \textbf{Carothers 5.28} Define $g: \ell^2 \to \RR$ by $g(x) = \sum_{n = 1}^\infty x(k)/k$. Is $g$ continuous. 
+\begin{proof} Suppose $x \in \ell^2$ and $(x_n) \subseteq \ell^2$ such that $x_n \to x$. 
+  \begin{align*}
+    |g(x_n) - g(x)| &= \big|\sum_{k = 1}^\infty x_n(k)\dfrac{1}{k} - \sum_{k = 1}^\infty x(k)\dfrac{1}{k}\big|\\
+    &= \big|\sum_{k = 1}^\infty \left(x_n(k) - x(k)\right) \dfrac{1}{k}\big|\\
+    &\leq \sum_{k = 1}^\infty |\left(x_n(k) - x(k)\right) \dfrac{1}{k}|\\
+  \end{align*}
+  By the Cauchy-Schwartz inequality we conclude that, 
+  \begin{equation*}
+    |g(x_n) - g(x)| \leq \norm{x_n - x}_2 \norm{\dfrac{1}{k}}_2
+  \end{equation*}
+  Since $x_n \to x$ it follows that $\norm{x_n - x}_2 \to 0$. Note that $\left(\frac{1}{k}\right) \in \ell^2$ so we know that $\norm{\frac{1}{k}}_2 < \infty$. Therefore
+  $|g(x_n) - g(x)| \to 0$ and thus $g(x)$ is continuous. 
+ 
+
+\end{proof}  
+
+\vspace*{.15in}
+
+
+
+\problem \textbf{Carothers 5.32} Prove that $f$ is lower semicontinuous if and only if $f(x) \leq \lim \inf_{n \to \infty} f(x_n)$ whenever $x_n \to x$ in $M$. 
+\begin{proof} Suppose $f$ is a lower semicontinuous function and $x \in M$ with $(x_n) \subseteq M$ such that $x_n \to x$. Let $m = \lim \inf_{n \to \infty} f(x_n) < \infty$, otherwise concluding $f(x) \leq \lim \inf_{n \to \infty} f(x_n)$ is trivial. By the definition of the limit infimum there are finitely many $n$ such that $m - \epsilon > f(x_n)$ and infinitely many $n$ such that $f(x_n) < m + \epsilon$. Hence it follows that the set $D = \{x \in M : f(x_n)< m+\epsilon\}$ contains infinitely many terms of $x_n$. Consider the subsequence $(x_{n_j})$ of elements of $(x_n)$ which are contained in $D$. Since $f$ is lower semicontinuous, $D$ is closed and since  $x_{n_j} \to x$ it must be the case that $x \in D$. Thus $f(x) \leq \lim \inf_{n \to \infty} f(x_n)$. 
+\end{proof}
+
+
+
+\begin{proof} Suppose that $f(x) \leq \lim \inf_{n \to \infty} f(x_n)$ whenever $x_n \to x$ in $M$. For the sake of contradiction suppose there exists an $\alpha \in \RR$ such that the set  $D = \{x \in M : f(x_n) \leq \alpha\}$ is not closed. Therefore there exists $(x_n) \subseteq D$ such that $x_n \to x$ with $x \not \in D$. However since $x_n \to x$ in $M$ it follows that $f(x) \leq \lim \inf_{n \to \infty} f(x_n)$. Since $(x_n) \subseteq D$ then we know that $f(x_n) \leq \alpha$ 
+  so therefore $\inf_{n \to \infty} f(x_n) \leq \alpha$. Finally we conclude that 
+  \begin{equation*}
+    f(x) \leq  \lim \inf_{n \to \infty} f(x_n) \leq \alpha.
+  \end{equation*}
+  Thus $x \in D$, a contradiction. 
+\end{proof}
+
+
+
+\vspace*{.15in}
+
+
+
+
+
+
+\problem \textbf{Carothers 7.5} Prove that $A$ is totally bounded if and only if $\overline{A}$ is totally bounded. 
+\begin{proof} Suppose $A$ is totally bounded. Given $\epsilon > 0$, there exists $A_1, \dots, A_n \subset A$, with $\diam{A_i} < \epsilon$ for all $i$, such that $A \subset \cup_{i = 1}^{n}A_i$. Note that by Problem 4.1  
+  $\diam{\overline{A_i}} = \diam{A_i} < \epsilon$. 
+  
+  Let $x \in \overline{A}$. Then there exists $(x_n) \subseteq A$ such that $x_n \to x$. But $A \subseteq \cup_{i = 1}^{n}A_i$, so $(x_n) \subseteq \cup_{i = 1}^{n}A_i$. Since the set $\{A_i\}_{i = 1}^n$ is finite there exists an $A_k$ with a tail of $(x_n)$. Hence there exists $(x_{n_j}) \subset A_k$ such that $x_{n_j} \to x$ and therefore by definition $x \in \overline{A_j}$. Therefore $\overline{A} \subseteq \cup_{i = 1}^n \overline{A_i}$.  
+
+\end{proof}
+
+\begin{proof} Suppose $\overline{A}$ is totally bounded. Given $\epsilon > 0$ there exists $A_1, \dots, A_n \subset \overline{A}$, with $\diam{A_i} < \epsilon$ for all $i$, such that $\overline{A} \subseteq \cup_{i = 1}^nA_i$. 
+  Note that $A \subseteq \overline{A} \subseteq \cup_{i = 1}^n A_i$, hence $A$ is totally bounded. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+\problem \textbf{Carothers 7.10} Prove that a totally bounded metric space $M$ is separable. 
+\begin{proof} Let $M$ be a totally bounded metric space. Let $\epsilon > 0$ and choose $n$ such that $1/n < \epsilon$. Since $M$ is totally bounded there exists a finite $(1/n)$-net corresponding to balls of radius $1/n$, call it $D_n$. Let $D = \cup_{n = 1}^\infty D_n$, and note that $D$ is a countable union of finite sets, and is therefore countable. What is left to show is that $D$ is dense in $M$. 
+
+  Let $x \in M$ and with $\epsilon > 0$ consider $B_{\epsilon}(x)$. Choose $n$
+  such that $1/n < \epsilon$, and note that there exists an element $x' \in D_n$ such that $d(x, x') < 1/n < \epsilon$ and hence $x' \in B_{\epsilon}(x)$. Therefore $D$ is dense in $M$.
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+\end{problems}
+\end{document}

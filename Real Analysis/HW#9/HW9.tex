@@ -1,0 +1,407 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\FF}{\mathcal{F}}
+
+
+
+\let\latexchi\chi
+\makeatletter
+\renewcommand\chi{\@ifnextchar_\sub@chi\latexchi}
+\newcommand{\sub@chi}[2]{% #1 is _, #2 is the subscript
+  \@ifnextchar^{\subsup@chi{#2}}{\latexchi^{}_{#2}}%
+}
+\newcommand{\subsup@chi}[3]{% #1 is the subscript, #2 is ^, #3 is the superscript
+\latexchi_{#1}^{#3}%
+}
+\makeatother
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework \#9}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+
+
+
+\begin{problems}
+
+  \problem Find (with proof) a function in $\mathcal{R}[a, b]$ that is not a uniform limit of step functions. 
+
+  \begin{proof} Consider $\chi_\Delta$ and suppose for the sake of contradiction that there exists a sequence of functions $f_n \in \text{Step}[0, 1]$ such that $f_n \to \chi_\Delta$ uniformly. Note that foror all $\epsilon > 0$ there exists an $N$ such that for all $x \in [0, 1]$ it follows that, 
+     \begin{equation*}
+      \abs{f_N(x ) - \chi_\Delta(x )} < \epsilon.
+     \end{equation*}
+     Since $f_N$ is a step function with a finite step partition $\mathcal{P}$, and since $\Delta$ is uncountable, there exists an $x \in \Delta$ such that $x \in I$ where $I$ is an open interval in $\mathcal{P}$. Let $y \in I$ such that $y \neq x$. Now there are two cases which each lead to a contradiction
+     
+     Suppose $y \in \Delta$ then since $\Delta$ is nowhere dense there exists a $z \in I$ such that $z \not\in \Delta$. Then by uniformly continuity we get the following, 
+     \begin{equation*}
+      \abs{\chi_\Delta(x) - f_N(x)} < \epsilon,
+     \end{equation*}
+     \begin{equation*}
+      \abs{ f_N(z) - \chi_\Delta(z)} < \epsilon.
+     \end{equation*}
+     Since $x, z \in I$ it follows that $f_N(z) = f_N(x)$ and therefore the triangle inequality it follows that, 
+     \begin{equation*}
+      \abs{\chi_\Delta(x) - \chi_\Delta(z)} \leq  \abs{\chi_\Delta(x) - f_N(x)} + \abs{ f_N(z) - \chi_\Delta(z)} < 2\epsilon.
+     \end{equation*}
+     This is clearly a contradiction as $\abs{\chi_\Delta(x) - \chi_\Delta(z)} = 1$. 
+
+     Now suppose $y \not\in \Delta$ and note that since $x, y \in I$, the same argument to get a contradiction. 
+
+     
+
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+  \problem Suppose $\ell: \mathcal{P}(\RR) \to [0, \infty]$. Show that $\ell$ is countably additive if and only if $\ell$ is finitely additive and countably subadditive. 
+  \begin{proof}$(\rightarrow)$
+    Suppose $\ell: \mathcal{P}(\RR) \to [0, \infty]$ is countably additive. Clearly $\ell$ is also finitely additive, simply consider your countable collection to be some disjoint sets $A$ and $B$ and the rest to be the emptyset. 
+    
+    To show that $\ell$ is countably subadditive let $\{A_i\}_{i = 1}^\infty$ such that $A_i $ are not necessarily disjoint. Construct another collection of sets, $\{B_i\}_{i = 1}^\infty$ such that $B_1 = A_1$ and  $B_i = A_i \setminus \left(\cup_{k = 1}^{i - 1}A_k\right)$ for all $i \geq 2$. We have proven that $B_k \subseteq A_k $ and $\cup_{k = 1}^n B_k = \cup_{k = 1 }^n A_k$, for all $n$. Therefore countable additivity and monotonicity it follows that, 
+    \begin{equation*}
+      \ell\left(\bigcup_{k = 1}^\infty A_k\right)  =  \ell\left(\bigcup_{k = 1}^\infty B_k\right) = \sum_{k = 1}^{\infty} \ell(B_k) \leq \sum_{k = 1}^{\infty} \ell(A_k). 
+    \end{equation*}
+  \end{proof}
+
+
+  \begin{proof}$(\leftarrow)$ Suppose  $\ell: \mathcal{P}(\RR) \to [0, \infty]$ is finitely additive and countably subadditive. Now consider a disjoint collection of sets $\{A_i\}_{i = 1}^\infty$. By countable subadditivity we know, 
+    \begin{equation*}
+      \ell\left(\cup_{i = 1}^\infty A_i\right) \leq  \sum_{i = 1}^\infty \ell\left(A_i\right).
+    \end{equation*}
+    Note that for each $n$ we know that $\cup_{i = 1}^n A_i \subseteq \cup_{i = 1}^\infty A_i$ and therefore by monotonicity it follows that, 
+    \begin{equation*}
+      \ell\left(\cup_{i = 1}^n A_i\right) \leq \ell\left(\cup_{i = 1}^\infty A_i\right).
+    \end{equation*}
+    Since our sets $A_i$ are dijoint, finite additivity for all $n$ it follows that, 
+    \begin{equation*}
+      \sum_{i = 1}^n \ell\left(A_i\right)  = \ell\left(\cup_{i = 1}^n A_i\right)\leq \ell\left(\cup_{i = 1}^\infty A_i\right) .
+    \end{equation*}
+    Hence, 
+    \begin{equation*}
+     \sum_{i = 1}^\infty \ell\left(A_i\right) \leq \ell\left(\cup_{i = 1}^\infty A_i\right).
+    \end{equation*}
+    So finally we can conclude that, 
+    \begin{equation*}
+      \ell\left(\cup_{i = 1}^\infty A_i\right) = \sum_{i = 1}^\infty \ell\left(A_i\right).
+    \end{equation*}
+
+    
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+
+
+  \problem \textbf{Carothers 16.4} Given any subset $E$ of $\RR$ and any $h \in \RR$, show that $m^*(E + h) = m^*(E)$, where $E + h = \{x + h : x \in E\}$. 
+  \begin{proof} Let $\{I_n\}_{n = 1}^\infty$ be a measuring cover for $E$. Note that 
+    \begin{equation}
+      \sum_{n = 1}^\infty m^*\left(I_n\right) = \sum_{n = 1}^\infty m^*\left(I_n + h\right).
+    \end{equation}
+    We want to show that $\{I_n + h\}_{n = 1}^\infty$ is a measuring cover for $E + h$ since by $(1)$ we get that $m^*(E) \leq m^*(E + h)$, and by symmetry we conclude that $m^*(E + h) = m^*(E)$. 
+    
+    To do that we need to show that $E + h \subseteq \cup_{n = 1}^\infty I_n + h$. Let $x \in E + h$, then by definition $x - h \in E$ and since $\{I_n\}_{n = 1}^\infty$ is a measuring cover for $E$, there exists an $I_N \in \{I_n\}_{n = 1}^\infty$ such that $x - h \in I_N$, and therefore $x \in I_N + h$. So $x \in \cup_{n = 1}^\infty I_n + h$ and thus $E + h \subseteq \cup_{n = 1}^\infty I_n + h$.
+    
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+% One direction is free from monotonicity so $m^*(E) \leq inf\{m^*(U)  : U \text{ is open and } E \subset U \}$. 
+  \problem \textbf{Carothers 16.12} Prove that $m^*(E) = \inf\{m^*(U)  : U \text{ is open and } E \subset U \}$.  
+  \begin{proof} First note that by monotonicity we know immediately that, 
+    \begin{equation*}
+      m^*(E) \leq \inf\{m^*(U)  : U \text{ is open and } E \subset U \}.
+    \end{equation*}
+  
+    Now we must establish, 
+    \begin{equation}
+      m^*(E) \geq \inf\{m^*(U)  : U \text{ is open and } E \subset U \}.
+    \end{equation}
+    Consider the case where $m^*(E) < \infty$ (otherwise the result is trivial) and note that to demonstrate $(2)$ we must find a sequence of open sets $U_n$ such that for a given $\epsilon > 0$ there exists an $N$ where for all $n \geq N$, 
+    \begin{equation*}
+      m^*(U_n) \leq m^*(E) + \epsilon. 
+    \end{equation*}
+
+
+    Let $\epsilon > 0$. By definition of outer measure there exists a sequence of measuring covers of $E$, sequenced by $n$, denoted $\{I_{i, n}\}_{i = 1}^\infty$ for which there exists an $N$ such that for all $n \geq N$ it follows that,
+    \begin{equation*}
+      \sum_{i = 1}^\infty \ell(I_{i, n}) \leq m^*(E) + \epsilon. 
+    \end{equation*}
+    By our definition in class of a measuring cover each $I_{i, n}$ is an open interval, and further it follows if $J_n = \cup_{i = 1}^\infty I_{i, n}$, then $J_n$ is open, $E \subseteq J_n$, and $m^*(J_n) = \sum_{i = 1}^\infty I_{i, n}$. Thus, 
+    \begin{equation*}
+      m^*(J_n) = \sum_{i = 1}^\infty \ell(I_{i, n}) \leq m^*(E) + \epsilon. 
+    \end{equation*}  
+    Having demonstrated a sequence of open sets $(J_n)$ with our desired quality $(2)$, we can conclude that $m^*(E) = \inf\{m^*(U)  : U \text{ is open and } E \subset U \}$.  
+    
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+  \problem \textbf{Carothers 16.16} If $m^*(E) = 0$, show that $m^*(E\cup A) = m^*(A) = m^*(A \setminus E)$ for any $A$. 
+  \begin{proof} Note that by monotonicity, since $A\cup E \subseteq A \subseteq A\setminus E$ we know that $m^*(A \cup E) \geq m^*(A) \geq m^*(A \setminus E)$. By countable subadditivity it follows that,
+    \begin{equation*}
+      m^*(A \cup E) \leq m^*(A) + m^*(E) = m^*(A). 
+    \end{equation*}
+    Since $A = (A \cap E)\cup (A \cap E^c)$, by countable subadditivity we also get,   
+    \begin{equation*}
+      m^*(A) = m^*(A \cap E) + m^*(A \cap E^c) \leq m^*(E) + m^*(A \cap E^c) = m^*(A \cap E^c).
+    \end{equation*}
+    Therefore $m^*(E\cup A) = m^*(A) = m^*(A \setminus E)$.
+
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+  \problem \textbf{Carothers 16.22} Let $E = \cup_{n = 1}^\infty E_n$. Show that $m^*(E) = 0$ if and only if $m^*(E_n) = 0$ for every $n$.
+  \begin{proof}  Let $E = \cup_{n = 1}^\infty E_n$ and suppose $m^*(E) = 0$. Since $E_n \subseteq E$ it follows by monotonicity that $m^*(E_n) \leq m^*(E) = 0$ and thus $m^*(E_n) = 0$ for every $n$. 
+  \end{proof} 
+  \begin{proof}
+  
+  Let $E = \cup_{n = 1}^\infty E_n$ and suppose $m^*(E_n) = 0$ for every $n$. By countable subadditivity it follows that, 
+  \begin{equation*}
+    m^*(E) \leq \sum_{i = 1}^{\infty}m^*(E_i) = 0. 
+  \end{equation*}
+  Thus $m^*(E)$.
+
+  \end{proof}
+  \vspace*{.15in}
+
+
+  % infinity case take, $G$ to be infinity. Now $E$ has finite measure, take a sequence of measureing sets whose outer measure converges to the infium of outermeasure, union them and intersetct them.  Countable intersection of open sets. 
+  \problem \textbf{Carothers 16.24} Given a subset $E$ of $\RR$, prove that there is a $G_\delta$-set $G$, containing $E$ such that $m^*(G) = m^*(E)$. 
+  \begin{proof} Let $E$ be a subset of $\RR$ and consider the case with $m^*(E)< \infty$ (otherwise let $G = \RR$ and the result follows). By Problem 4 there exists a sequence of open sets $U_n$ with $E \subset U_n$, such that $m^*(U_n) \to m^*(E)$. Now let $G = \cap_{n = 1}^\infty U_n$ and note that clearly $E \subset G$. By monotonicity $m^*(G) = \inf\{m^*(U)  : U \text{ is open and } E \subset U \}$ and by Problem 4 $m^*(G) = m^*(E)$. 
+  \end{proof}
+  \vspace*{.15in}  
+
+
+
+  %proof by contradiction?
+  \problem \textbf{Carothers 16.25} Suppose that $m^*(E) > 0$. Give $0 < \alpha < 1$, show that there exists an open interval $I$ such that $m^*(E \cap I) > \alpha m^*(I)$.[Hint: It is enough to consider the case $m^*(E) < \infty$. Now suppose that the conclusion fails.] 
+  \begin{proof} Let $m^*(E) > 0$ and suppose there exists an $\alpha$ with $0 < \alpha < 1$ such that for every open interval $I$, $m^*(E\cap I) \leq \alpha \ell(I)$. Now let $\epsilon > 0$ and note that there exists a measuring cover $\{I_n\}_{n = 1}^\infty$ such that, 
+    \begin{equation*}
+      \sum_{n = 1}^\infty \ell(I_n) \leq m^*(E) + \epsilon. 
+    \end{equation*}
+    Now it follows that, 
+    \begin{align*}
+      \alpha \sum_{n = 1}^\infty \ell(I_n) &\leq \alpha\left(m^*(E) + \epsilon\right)\\ 
+      \sum_{n = 1}^\infty \alpha \ell(I_n) &\leq \alpha\left(m^*(E) + \epsilon\right)\\ 
+      \sum_{n = 1}^\infty \alpha m^*(E\cap I_n) &\leq \alpha\left(m^*(E) + \epsilon\right)\\
+    \end{align*}
+      Since $E \subseteq \cup_{n = 1}^\infty (E\cap I_n)$, by countable subadditivity it follows that, 
+    \begin{equation*}
+      m^*(E) \leq \alpha\left(m^*(E) + \epsilon\right).
+    \end{equation*}
+    Further we find that,
+    \begin{equation}
+      0 < m^*(E)(1 - \alpha) \leq \alpha \epsilon. 
+    \end{equation}
+    However clearly an $\epsilon$ can be chosen such that the $(3)$ does not hold. 
+    
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+% proof by contradiction?
+  \problem \textbf{Carothers 16.28} Fix $\alpha$ with $0 < \alpha < 1$ and repeat our "middle thirds" construction of the Cantor set except that now, at the $n$th stage, each of the $2^{n - 1}$ open intervals we discard from $[0, 1]$ is to have length $(1 - \alpha)3^{-n}$. (We still want to remove each open interval from the 'middle' of a closed interval in the current level- it is important that the closed intervals that remain turn out to be nested.) The limit of this process, a set that we will name $\Delta_\alpha$, is called the generalized Cantor set and is very much like the ordinary Cantor set. Note that $\Delta_\alpha$ is uncountable, compact, nowhere dense, and so on but has nonzero outer measure. Indeed check that $m^*(\Delta_{\alpha}) = \alpha$. (See Chapter two for an example.)[Hint: you only need upper estimates for $m^*(\Delta_\alpha)$ and $m^*({\Delta_{\alpha}}^c)$] 
+
+
+  \begin{proof} By definition we know that ${\Delta_{\alpha}}^c = \cap_{n = 1}^\infty J_n$ where $J_n$ is itself the union of 'middle thirds' taken from the $n$th step in the set recurrence relation definition of ${\Delta_{\alpha}}$ . Note that each $J_n$ is a union of $2^{n - 1}$ disjoint intervals of length $(1 - \alpha)3^{-n}$, and therefore by countable subadditivity we conclude that, 
+    \begin{equation*}
+      m^*({\Delta_{\alpha}}^c) \leq \sum_{n = 1}^{\infty} m^*(J_n) = \sum_{n = 1}^{\infty} (1 - \alpha)2^{n - 1}3^{-n} = \dfrac{(1 - \alpha)}{3}\sum_{n = 1}^{\infty}\left(\dfrac{2}{3}\right)^{n - 1} = 1 - \alpha < 1.
+    \end{equation*}
+    Since $[0, 1] = {\Delta_{\alpha}}^c \cup {\Delta_{\alpha}}$ by countable subadditivity we also know that,
+    \begin{equation*}
+      m^*([0, 1]) \leq m^*({\Delta_{\alpha}}^c) + m^*(\Delta_\alpha)
+    \end{equation*}
+    Clearly since $m^*([0, 1]) = 1$ and $m^*({\Delta_{\alpha}}^c) < 1$ it must be the case that $m^*(\Delta_\alpha) > 0$ as desired. 
+    
+  \end{proof}
+  \vspace*{.15in}
+
+
+
+
+\end{problems}
+\end{document}

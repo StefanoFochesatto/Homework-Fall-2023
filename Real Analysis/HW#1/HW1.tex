@@ -166,29 +166,161 @@
 \let\CC\Cplx
 
 \doclabel{Math F641: Homework 1}
-%\docauthor{Your name here.}
-\docdate{Due: September 1, 2021}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
 \begin{document}
 \begin{problems}
 
-\problem Carothers 1.4
+\problem \textbf{Carothers 1.4} Let $A$ be a nonempty subset of $\RR$ that is bounded above. Show that there is a sequence $x_n$ of elements of $A$ that converge to $\sup A$.
+\begin{proof} Suppose $A$ is a nonempty subset of $\RR$ that is bounded above. Let $s = \sup A$ and consider the sequence $x_n = s - \frac{1}{n}$.
 
-\problem Carothers 1.11
+  Note that $x_n\to s$, let $\epsilon > 0$ and choose $N \in \NN$ such that $1/N < \epsilon$ and note that for all $n \geq N$,
+  \begin{align*}
+    |x_n - s| &= |s - \frac{1}{n} -s|\\
+      &= \frac{1}{n} \leq \frac{1}{N} < \epsilon.
+  \end{align*}
 
-\problem Carothers 1.15
+  Since $s$ is the supremum of $A$ we know that for all $x_n < s$ there exists some $a_n \in A$ such that $x_n < a_n \leq s$. 
+  Hence the sequence $a_n \to S$.  
+\end{proof}
+\vspace*{.15in}
 
-\problem Carothers 1.21
 
-\problem Carothers 1.24
+
+\problem \textbf{Carothers 1.11} Fix $a>0$ and let $x_1 >\sqrt{a}$. For $n\geq 1$, define, 
+\begin{equation*}
+  x_{n+1} = \frac{1}{2} \left(x_n + \frac{a }{x_n }\right)
+\end{equation*}
+Show that $(x_n)$ converges and that $\lim_{n \to \infty }x_n = \sqrt{a }$.
+\begin{proof} Suppose $a>0$ and let $x_1 >\sqrt{a}$. Since $x_1 > \sqrt{a} > 0$ it follows that $x_n > 0$. We will proceed to show that $x_n$ is bounded below by $\sqrt{a}$. Note that,
+  \begin{align*}
+    x_{n+1} &= \frac{1}{2} \left(x_n + \frac{a }{x_n }\right),\\
+    2x_{n+1} &= x_n + \frac{a }{x_n },\\
+    -x_n + 2x_{n+1}&=\frac{a }{x_n },\\
+    -x_n^2 + 2x_{n+1}x_n&=a,\\
+    -x_n^2 + 2x_{n+1}x_n - a&=0,\\
+    x_n^2 - 2x_{n+1}x_n + a=0.
+  \end{align*}
+  Arriving at an equation that is quadratic with respect to $x_n$ it follows that it's discriminant, 
+  $(-2x_{n+1})^2 - 4a = 4x_{n+1}^2 - 4a \geq 0$ which implies that $x_{n+1} \geq \sqrt{a}$ and therefore $x_n \geq \sqrt{a}$.
+
+  Now we will demonstrate that $x_{n+1} \leq x_n$. From the previous result we find that,
+  \begin{align*}
+    \sqrt{a} &\leq x_n,\\
+    a &\leq x_n^2,\\
+    \frac{a}{x_n} &\leq x_n,\\
+    \frac{a}{2x_n} &\leq \frac{x_n}{2},\\
+    \frac{x_n}{2} + \frac{a}{2x_n} &\leq x_n,\\
+    \frac{1}{2}\left(x_n + \frac{a}{x_n}\right) &\leq x_n,\\
+    \frac{1}{2}\left(x_n + \frac{a}{x_n}\right) &\leq x_n,\\
+    x_{n+1} &\leq x_n.
+  \end{align*}
+  
+  Thus $x_n$ is a monotone decreasing bounded sequence and therefore converges to some limit $\lim_{n \to \infty}x_n = L$. By substitution we find that, 
+  \begin{align*}
+    \lim_{n \to \infty }x_{n+1}  &= \lim_{n \to \infty }\frac{1}{2} \left(x_n + \frac{a }{x_n }\right).\\
+  \end{align*}
+  Note that $L \neq 0$ since that would force the $\frac{a}{x_n}$ to infinity, contradiction $x_n \geq x_{n + 1}$. Therefore, 
+  \begin{align*}
+    L  &= \frac{1}{2} \left(L + \frac{a }{L}\right),\\
+    L  &=  \frac{a }{L},\\
+    L^2  &=  a,\\
+    L  &=  \sqrt{a}.
+  \end{align*}
+\end{proof}
+\vspace*{.15in}
+
+\problem \textbf{Carothers 1.15} Show that a Cauchy sequence with a convergent subsequence actually converges.
+
+\begin{proof} Suppose $(x_n)$ is a Cauchy sequence and $(x_n)_i \to a$ is a convergent subsequence.
+  Let $\epsilon > 0$. Since $(x_n)_i \to a$ there exists an $I \in \NN$ such that for all $i \geq I$ it follows that, 
+  \begin{equation*}
+    |x_{n_i} - a| < \frac{\epsilon}{2}. 
+  \end{equation*}
+
+  Similarly since $(x_n)$ is Cauchy we know that there exists an $\hat{N} \geq 1$ such that 
+  when $n, m \geq \hat{N}$ it follows that, 
+  \begin{equation*}
+    |x_{n} - x_{m}| < \frac{\epsilon}{2}. 
+  \end{equation*}
+
+  Let $\epsilon > 0$, and note that for $N = \max\{n_I, \hat{N}\}$ all $n \geq N$ have the property that, 
+  \begin{align*}
+    |x_{n} - a| &= |x_{n} - x_{n_{N}} + x_{n_{N}} - a|,\\
+    &\leq |x_{n} - x_{n_{N}}| + |x_{n_{N}} - a|,\\
+  \end{align*}
+  Note that we use $x_{n_{N}}$ to ensure that $n_{N} \geq \hat{N}, n_I$. So we conclude with, 
+  \begin{equation*}
+    |x_{n} - a| < \frac{\epsilon}{2} + \frac{\epsilon}{2} = \epsilon.
+  \end{equation*}
+
+\end{proof}
+
+
+
+
+
+
+
+\problem \textbf{Carothers 1.21} Let $p \geq 2$ be a fixed integer, and let $0 < x < 1$. If $x$ has a finite-length base $p$ decimal expansion, that is, if $x = a_1/p + \dots a_n/p^n$ with $a_n \neq 0$, prove that $x$ has precisely two base $p$ decimal expansions. Otherwise, show that the base $p$ decimal expansion for $x$ is unique. Characterize the numbers $0 < x <1$ that have repeating base $p$ decimal expansions. How about eventually repeating?
+
+
+\problem \textbf{Carothers 1.24} Show that $\lim \sup_{n \to \infty} (-a_n) = - \lim \inf_{n \to \infty} a_n$. 
+\begin{proof} Let $(a_n)$ be a bounded sequence of real numbers. Note that by definition, 
+  \begin{equation*}
+    \lim \sup_{n \to \infty} (-a_n) = \overline{\lim_{n \to \infty}} -a_n = \inf_{n \geq 1}\left(\sup\{-a_n, -a_{n+1}, -a_{n+2},\dots\}\right)
+  \end{equation*}
+  Let $-a_i$ be an eventual upper bound for the sequence and note that for all $n \geq i$ we know that $-a_i \geq -a_n$. Multiplying both sides by -1, we reverse the inequality to get $a_i \leq a_n$ and conclude that $a_i$ is an eventual lower bound for the sequence $a_n$. Hence it follows that 
+  \begin{equation*}
+    \inf_{n \geq 1}\left(\sup\{-a_n, -a_{n+1}, -a_{n+2},\dots\}\right) = -\sup_{n \geq 1}\left(\inf\{a_n, a_{n+1}, a_{n+2},\dots\}\right)
+  \end{equation*}
+  
+\end{proof}
+
+
 
 \problem Suppose $\limsup_{n\rightarrow\infty} x_n = -\infty$, as defined in terms
-of eventual upper bounds.  Show that $$
+of eventual upper bounds.  Show that 
+$$
 \overline{\lim_{n\rightarrow\infty}} x_n =-\infty,
 $$ as defined in the text.
+\begin{proof} Suppose that $\limsup_{n\rightarrow\infty} x_n = -\infty$. Defined in terms of eventual upper bounds, 
+  \begin{equation*}
+    \limsup_{n\rightarrow\infty}^* x_n = \inf\{M: M \text{ is an eventual upper bound for } (x_n)\} = -\infty
+  \end{equation*}
+  Recall the definition of $\limsup_{n\rightarrow\infty} x_n$ from the text,
+  \begin{equation*}
+    \limsup_{n\rightarrow\infty} x_n = \inf_{n \geq 1}\left(\sup\{a_n, a_{n+1}, a_{n+2},\dots\}\right)
+  \end{equation*}
+  Note that $\sup\{a_n, a_{n+1}, ...\}$ describes an eventual upper bound with index $M \geq n$ which is also an element in the sequence $(a_n)$. Therefore the text's definition $\limsup_{n\rightarrow\infty} x_n $ describes an infimum over a subset of eventual upper bounds.
+
+  Suppose for the sake of contradiction that $\limsup_{n\rightarrow\infty} x_n \geq L$ with $L \in \RR$. By $\limsup_{n\rightarrow\infty}^* x_n = -\infty$ we know there exists 
+  an eventual upper bound $L^*$ such that $L^* < L$. If $L^* \in (x_n)$ then it follows that 
+  $\limsup_{n\rightarrow\infty} x_n  = L^*$ a contradiction. Otherwise if $L^* \not\in (x_n)$
+  it follows from the definition of E.U.B that for some $M \in \NN$ all $n \geq M$, $x_n < L$. 
+  Finally we arrive at a contradiction
+  \begin{equation*}
+    \sup\{a_M, a_{M+1}, a_{n+2},\dots\}<L^* < L.
+  \end{equation*}
+  Therefore $\limsup_{n\rightarrow\infty} x_n  = -\infty$.
+  
+  
+\end{proof}
+
+
+
+
+
+
+
 
 \problem Let $(r_n)$ be an enumeration of $\mathbb Q\cap [0,1]$.  Show that
 $\limsup{n\rightarrow\infty} = 1$.
+\begin{proof} Suppose $(r_n)$ be an enumeration of $\mathbb Q\cap [0,1]$. Clearly 1 is an upper bound for  $(r_n)$ and therefore an eventual least upper bound. We will proceed to show that 1 is an infimum on the set of eventual upper bounds, and therefore $\limsup{n\rightarrow\infty} = 1$.
 
+  Suppose for the sake of contradiction that an eventual upper bound $M$ such that $M < 1$. Therefore there exists some $N$ where for all $n \geq N$ we know that $r_n \leq M$. However by the density 
+  of $\mathbb Q$ in $\RR$, there exists $N+1$ rational numbers in $(M,1)$ and hence there must exists some $r_i > M$ where $i > N$, a contradiction.
+\end{proof}
 %\hproblem Carothers 1.25
 
 \problem Prove that
@@ -197,8 +329,45 @@ $$
 $$
 so long as neither of the right- or left-hand sides are of the form $\infty-\infty$.
 
-\problem Carothers 1.36
+
+
+
+
+
+
+
+
+\problem \textbf{Carothers 1.36} Let $a_n \geq 0$.
+\begin{enumerate}
+  \item[\textbf{(i)}] If $\limsup_{n\rightarrow\infty} \sqrt[n]{a_n} < 1$, show that $\sum_{n = 1}^{\infty} a_n < \infty$. 
+  \begin{proof} Suppose $\limsup_{n\rightarrow\infty} \sqrt[n]{a_n} < 1$ and let $m = \limsup_{n\rightarrow\infty} \sqrt[n]{a_n}$. Note that there exists an eventual upper bound to the sequence, $M$
+    such that $m< M < 1$. Therefore for some $N \in \NN$, for $n \geq N$ we know that $\sqrt[n]{a_n} < M$.
+    Therefore by substitution we get, 
+    \begin{equation*}
+      \sum_{n = 1}^{\infty} a_n   =  \sum_{n = 1}^{N} a_n + \sum_{n = N+1}^{\infty} a_n < \sum_{n = 1}^{N} a_n + \sum_{n = N+1}^{\infty} (M)^n.
+    \end{equation*} 
+    Clearly $\sum_{n = N+1}^{\infty} (M)^n < \infty$ since it is a convergent geometric series, and $\sum_{n = 1}^{N} a_n < \infty$ since it is a finite sum. Therefore $\sum_{n = 1}^{\infty} a_n < \infty$.
+  \end{proof} 
+
+
+  \item[\textbf{(ii)}] If $\liminf_{n\rightarrow\infty} \sqrt[n]{a_n} >1$, show that $\sum_{n = 1}^{\infty} a_n$ diverges. 
+  \begin{proof} Suppose $M = \liminf_{n\rightarrow\infty} \sqrt[n]{a_n} >1$ and for the sake of contradiction 
+    we suppose $\sum_{n = 1}^{\infty} a_n$ converges. For the infinite series to converge it is necessary for $\lim_{n \to \infty}(a_n) \to 0$ and therefore $\liminf_{n\rightarrow\infty} {a_n} = 0$.
+    Note that there exists some eventual lower bound $m$ for the sequence $\sqrt[n]{a_n}$
+    such that $1<m<M$. Therefore for some $N \in \NN$, for $n \geq N$ we know that $\sqrt[n]{a_n} > 1$ and thus $a_n > 1$. To conclude, we have shown that there exists a tail of the sequence $(a_n)$ which is above 1, yet still convergent to 0, a contradiction. 
+  \end{proof}
+
+
+
+  \item[\textbf{(iii)}] Find examples of both a convergent and divergent series having $\lim_{n\to\infty} \sqrt[n]{a_n} = 1$. 
+
+
+
+
+
+
+
+\end{enumerate}
 
 \end{problems}
 \end{document}
-

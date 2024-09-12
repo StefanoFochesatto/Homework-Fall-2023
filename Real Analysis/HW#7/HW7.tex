@@ -1,0 +1,477 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\lVert #1 \rVert}
+
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Take Home Midterm}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+\begin{problems}
+
+%_________________________________________________________________________
+%CHAPTER 10
+% What does it mean for a sequence of functions to converge uniformly. It means that for all epsilon greater than zero there exists an N such that if n \geq N  then \rho(fn(x), f(x)) < \epsilon, for all x \in X. 
+ 
+
+
+%% Not Done we need an example of a pair of sequences of functions which converge uniformly on their own but when multiplied together don't converge uniformly 
+\problem \textbf{Carothers 10.7} Let $(f_n)$ and $(g_n)$ be real-values functions on a set $X$, and suppose that $(f_n)$ and $(g_n)$ converge uniformly on $X$. Show that $(f_n + g_n)$ converges uniformly on $X$. Give an example showing that $(f_ng_n)$ need not converge uniformly on $X$. 
+\begin{proof} Let $\epsilon > 0$. Since $(f_n)$ and $(g_n)$ are real-values functions which converge uniformly on $X$, there exists an $N$ such that if $n \geq N$ then, for all $x \in X$, 
+  \begin{equation*}
+    |f_n(x) - f(x)| < \epsilon, 
+  \end{equation*}
+  \begin{equation*}
+    |g_n(x) - g(x)| < \epsilon. 
+  \end{equation*}
+
+  Then by the triangle inequality it follows that for all $x \in X$, 
+  \begin{align*}
+    |(f_n(x) + g_n(x)) - (f(x) + g(x))| &=  |(f_n(x) - f(x)) + (g_n(x) - g(x))|, \\
+    &\leq |f_n(x) - f(x)|+ |g_n(x) - g(x)|, \\
+    &< 2\epsilon.
+  \end{align*}
+  Thus $(f_n + g_n)$ converges uniformly on $X$. 
+  For an example where $(f_ng_n)$ do not converge uniformly on $X$ consider $g_n = 1/n$ a sequence of constant functions and $f_n = x^2$ a constant sequence of functions. Note both $g_n$ and $f_n$ are uniformly convergent on all of $\RR$, $g_n$ converges to the zero function and $f_n$ converges to $x^2$. However the sequence $(g_nf_n) = (1/n)x^2$ is not uniformly convergent to its point wise limit, the zero function. Let $\epsilon_0 = 1/2$ and note that for each $n$ we can take $x = \sqrt{n}$ and we find that, 
+  \begin{equation*}
+    |f_n(\sqrt{n}) - 0| = \left\lvert \frac{1}{n}{\sqrt{n}}^2 \right\rvert = 1 > \frac{1}{2}
+  \end{equation*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+\problem \textbf{Carothers 10.9} For each of the following sequences, determine the point wise limit on the given interval (if it exists) and the interval on which the convergence is uniform (if any):
+
+\begin{enumerate}
+  \item[\textbf{a.}] $f_n(x) = x^n$ on $(-1, 1]:$
+  \solution
+  Note for a fixed $x \in (-1, 1)$, we get $f_n(x)\to 0$ and for $x = 1$ we find that $f_n(1) \to 1$ therefore the point wise limit of $f_n$ on $(-1, 1]$ is, 
+  \begin{equation*}
+    f(x) = \begin{cases}
+      0 , x \neq 1\\
+      1 , x = 1
+    \end{cases}.
+  \end{equation*}
+  Let $\delta > 0$ and note that on $[-1+\delta, 1-\delta]$, a compact interval we know that $f_n$ decreases point wise to the zero function, hence by Dini's Theorem $f_n$ converges uniformly to $[-1+\delta, 1-\delta]$.
+
+
+  \item[\textbf{b.}] $f_n(x) = n^2x(1 - x^2)^n$ on $[0, 1]:$
+  \solution
+  For a fixed $x \in (0, 1)$ we find that, $0 < (1 - x^2) < 1$ and therefore the sequence 
+  $f_n(x) = n^2x(1 - x^2)^n$ is dominated by the $(1 - x^2)^n$ term and converges to $0$. Now when $x = 1$ or $x = 0$ we find that $f_n(x) = 0$. Hence $f_n$ converges point wise to the zero function. This sequence is uniformly convergent to the zero function on the interval $[\delta, 1)$ for a $\delta > 0$. To see this note that there exists an $N$ far enough out in the sequence of functions which such that if $n \geq N$ the 'hump' in $f_n(x)$ lies between $[0, \delta)$. 
+  
+
+
+  \item[\textbf{c.}] $f_n(x) = nx/(1 + nx)$ on $[0, \infty):$
+  \solution
+  Fix $x \in (0, \infty)$ and note that $f_n(x) = nx/(1 + nx) \to 1$ however clearly if $x = 0$, we get that $f_n(0) = n(0)/(1 + n(0)) = 0$. So the point wise limit of $f_n$ on $[0, \infty)$ is given by, 
+  \begin{equation*}
+    f(x) = 
+    \begin{cases}
+      0, x = 0\\
+      1, x \neq 0
+    \end{cases}
+  \end{equation*}
+  Again if we let $\delta >0$ and we consider the interval $[\delta, \infty)$ we have uniform convergence. 
+
+
+  \item[\textbf{d.}] $f_n(x) = nx/(1 + n^2x^2)$ on $[0, \infty):$
+  \solution Fix $x \in (0, \infty)$ we find that 
+  \begin{equation*}
+    f_n(x) = \dfrac{nx}{(1 + n^2x^2)} < \dfrac{nx}{(nx)^2} = \dfrac{1}{nx}  \to 0
+  \end{equation*}
+  Clearly when $x = 0$, $f_n(x) \to 0$ and therefore $f_n$ on $[0, \infty)$ converges point wise to $0$. Similarly to part $b$ to get $f_n$ to converge uniformly we must select an interval $[\delta, \infty)$ where $\delta > 0$, so we have the option to find a far enough $N$ which pushes the 'hump' into the interval $[0, \delta).$
+
+  
+
+  \item[\textbf{e.}] $f_n(x) = xe^{-nx}$ on $[0, \infty):$
+  \solution Fix $x \in (0, \infty)$ then it follows that $f_n(x) = xe^{-nx} \to 0$ and clearly $f_n(0) = 0$ so $f_n$ converges point wise to the zero function. Note $f_n$ is decreases point wise to zero on $[0, \infty)$, so considering a compact sub interval $[0, 1]$ we get by Dini's Theorem that $f_n$ converges uniformly on $[0, 1]$. 
+
+
+
+  \item[\textbf{f.}] $f_n(x) = nxe^{-nx}$ on $[0, \infty):$
+  \solution Fix $x \in (0, \infty)$ then it follows that $f_n(x) = nxe^{-nx} \to 0$ since the sequence is dominated by the exponential decay in the $e^{-nx}$. It also follows tha that $f_n(0) = 0$ and therefore $f_n$ is point wise convergent on $[0, \infty):$ to the zero function. Again similarly to part $d$ and $b$ we select interval $[\delta, \infty)$ where $\delta > 0$, so we have the option to find a far enough $N$ which pushes the 'hump' into the interval $[0, \delta).$
+
+
+
+
+
+
+\end{enumerate}
+\vspace*{.15in}
+
+
+
+
+
+
+%See about cleaning up the for every x\in \RR statement. But the idea is here. 
+\problem \textbf{Carothers 10.10} Let $f:\RR \to \RR$ be uniformly continuous, and define $f_n(x) = f(x + 1/n))$. Show that $f_n$ uniformly converges to $f$ on $\RR$.  
+\begin{proof} Let $\epsilon > 0$. Since $f$ is uniformly continuous there exists a $\delta>0$ such that for all $x, y \in \RR$ if $|x - y| < \delta$ then $|f(x)- f(y)| < \epsilon$. Now choose $N$ such that if $n \geq N$ then $|x - (x + 1/n)| = |1/n|< \delta$, then it follows that for all $x \in \RR$
+  \begin{equation*}
+  |f(x) - f_n(x)| = |f(x) - f(x + 1/n)| < \epsilon. 
+  \end{equation*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+\problem \textbf{Carothers 10.15} Let $(X, d)$ and $(Y, \rho)$ be metric spaces, and let $f, f_n: X \to Y$, with $f_n$ uniformly converging to $f$ on $X$. If each $f_n$ is continuous at $x \in X$, and if $x_n \to x$ in $X$, prove that $\lim_{n \to \infty}f_n(x_n) = f(x)$. 
+\begin{proof} Let $\epsilon > 0$. Since $f_n$ uniformly converges to $f$ we can choose $N_1$ such that if $n \geq N_1$ then for all $x \in X$ it follows that $\rho(f_n(x), f(x)) < \epsilon$. Since each $f_n$ is continuous at $x$ and $x_n \to x$ then it follows that $f_n(x_n) \to f_n(x)$. Now choose $N_2$ such that if $i \geq N_2$ then $\rho(f_n(x_i), f_n(x)) < \epsilon$. Let $N = \max\{N_1, N_2\}$ and it follows that for all $n \geq N$,
+  \begin{align*}
+    \rho(f_n(x_n),f(x)) &\leq \rho(f_n(x_n), f(x_n)) + \rho(f(x_n), f(x)),\\
+    &\leq \rho(f_n(x_n), f(x_n)) + \rho(f(x_n), f_n(x_n)) + \rho(f_n(x_n), f_n(x)) + \rho(f_n(x), f(x)),\\
+    &< 4\epsilon.
+  \end{align*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+% Let $X$ be a compact metric space, then if $f_n$ converges point wise and from below, then $f_n$ converges unifromly. Use pointwise converges to show that U_n covers X, X is compact so there exists a finite subcover. The cardinality of U_n is increasing in size, so there is a maximum 
+
+\problem \textbf{Carothers 10.18} Here is a partial converse to Theorem 10.4, called Dini's Theorem. Let $X$ be a compact metric space, and suppose that the sequence $(f_n)$ in $C(X)$ increases pointwise to a continuous function $f \in C(X)$; that is, $f_n(x) \leq f_{n + 1}(x)$ for each $n$ and $x$, and $f_n(x) \to f(x)$ for each $x$. Prove that the convergence is actually uniform. The same is true if $(f_n)$ decreases pointwise to $f$. 
+\begin{proof} First we will reduce this problem to the case where $(f_n)$ decreases pointwise to 0. Without loss of generality suppose $(f_n)$ in $C(X)$ decreases pointwise to a continuous function $f \in C(X)$. Define a new sequence of function $(g_n)$ where $g_n(x) = f_n(x) - f(x)$ and note that since $f_n(x) \to f(x)$ pointwise it follows that $g_n(x) \to 0$ pointwise. Since $f_{n}(x) \geq f_{n + 1}(x)$ for each $n$ and $x$, it follows by subtracting $f(x)$ to both sides that $g_n(x) \geq g_{n + 1}(x)$ for each $n$ and $x$. Therefore $g_n$ decreases pointwise to $g$. 
+
+  Let $\epsilon > 0$. Consider the open sets $U_n = \{x \in X: g_n(x) < \epsilon\}$, we will show that $U_n$ covers $X$. Let $x \in X$, and note that since $g_n(x) \to 0$ pointwise there must exists an $N$ such that $|g_N(x)| < \epsilon$, and therefore $x \in U_N$. Now since $X$ is compact and the set of all $U_n$ form an open cover, we know that there exists a finite subcover $\{U_i\}_{i \in I}$, for some finite index set $I$. Now
+  let $x \in U_n$, then by definition $g_n(x) < \epsilon$ but clearly $g_{n+1}(x)\leq g_n(x) < \epsilon$, so it follows $x \in U_{n + 1}$, and therefore $U_n \subseteq U_{n + 1}$.
+  
+  
+  
+  Now, since the set $I$ is finite there exists a $U_M = \max_{n \in I} U_i$, and since $U_n \subseteq U_{n + 1}$ and $\{U_i\}_{i \in I}$ is a cover of $X$, $U_M$ covers $X$. Thus for all $n \geq M$ it follows that for all $x \in X$ (since $U_M$ covers $X$)
+  we have, 
+  \begin{equation*}
+    |g_n(x)| < \epsilon. 
+  \end{equation*}
+
+
+
+
+
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+
+\problem \textbf{Carothers 10.19} Suppose $(f_n)$ is a sequence of functions in $C[0, 1]$ and that $f_n$ converges uniformly to $f$ on $[0, 1]$. True or false $\int_{0}^{1 - (1/n)} f_n \to \int_0^1f$.  
+\begin{proof} Note that since $(f_n) \subseteq C(0, 1)$ and $f_n$ converges uniformly to $f$, we know that $f \in C[0, 1]$ and is therefore Riemann integrable. Let $\epsilon > 0$ and choose $N$ to be the max of either $1/N < \epsilon$ or $\norm{f - f_n}{\infty} < \epsilon$ then if $n \geq N$, 
+  \begin{align*}
+    \left\lvert\int_0^1f(x)dx - \int_{0}^{1 - (1/n)} f_n(x)dx \right\rvert &= \left\lvert\int_{1 - (1/n)}^1f(x)dx + \int_{0}^{1 - (1/n)} f(x)dx - \int_{0}^{1 - (1/n)} f_n(x)dx \right\rvert\\
+    &\leq \left\lvert\int_{1 - (1/n)}^1f(x)dx\right\rvert + \left\lvert\int_{0}^{1 - (1/n)} f(x)dx - \int_{0}^{1 - (1/n)} f_n(x)dx \right\rvert\\
+    &= \left\lvert\int_{1 - (1/n)}^1f(x)dx\right\rvert + \left\lvert\int_{0}^{1 - (1/n)} f(x)- f_n(x)dx \right\rvert\\
+    &\leq \int_{1 - (1/n)}^1\left\lvert f(x) \right\rvert dx + \int_{0}^{1 - (1/n)} \left\lvert f(x)- f_n(x)\right\rvert dx \\
+    &\leq (1/n)\norm{f}{\infty} + (1 - (1/n)) \norm{f - f_n}{\infty}\\
+    &<\epsilon \norm{f}{\infty} + (1 - \epsilon)\epsilon
+  \end{align*}
+
+  
+
+\end{proof}
+\vspace*{.15in} 
+
+
+
+
+
+
+
+
+% We want to show that the space of bounded functions is not seperable. Exhibit an uncountable set of disjoint open balls. Any dense subset must meet this uncountable set of disjoint open balls, therefore there cannot exists a countable dense subset. 
+
+% Now we need to find an uncountable set of functions in $B[0, 1]$ that are each within there own little \espilon ball as measured by the inifinity norm on the space of functions. 
+\problem \textbf{Carothers 10.25} Show that $B[0, 1]$ is not separable. 
+\begin{proof} Consider the set of function $\delta_y(x): [0, 1] \to \RR$ defined by,
+  \begin{equation*}\delta_y(x) = \begin{cases}
+  0, x \neq y\\
+  1, x = y
+\end{cases}
+\end{equation*}
+Note that $\{\delta_y(x)\}_{y \in [0, 1]} \subseteq B[0, 1]$ since each $\delta_y(x)$ is bounded above by 1 and below by 0. Now consider the collection of sets $\{B_{1/2}(\delta_y(x))\}_{y \in [0, 1]} \subseteq B[0, 1]$. This collection is uncountable, and each set is disjoint, since if we fix $a \in [0, 1]$ and let $b \in [0, 1]$ such that $b \neq a$ we find that $\norm{\delta_a(x) - \delta_b(x)}{\infty} = 1 < 1/2$ since $\delta_a(x) - \delta_b(x)$ takes on a value of 1 at $a$, -1 at $b$ and 0 elsewhere. Hence any countable dense subset would have to have a single element in each set of $\{B_{1/2}(\delta_y(x))\}_{y \in [0, 1]}$ which is impossible since there are an uncountable number of them. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+% Weistrauss M test
+\problem \textbf{Carothers 10.26} If $\sum_{n = 1}^\infty |a_n| < \infty$, prove that $\sum_{n = 1}^\infty a_n\sin(nx)$ and $\sum_{n = 1}^\infty a_n \cos(nx)$ are uniformly convergent in $\RR$. 
+
+\begin{proof} First let $M_n = |a_n|$ and note that for a fixed $n$ since $|\sin(x)| \leq 1$ and $|\cos(x)| \leq 1$ we find that for all $x \in \RR$, 
+  \begin{equation*}
+    |a_n\sin(nx)| = |a_n||\sin(nx)| \leq |a_n| = M_n,
+  \end{equation*}
+  \begin{equation*}
+    |a_n\cos(nx)| = |a_n||\cos(nx)| \leq |a_n| = M_n. 
+  \end{equation*}
+By the Weirstrass M-test it follows that since $\sum_{n = 1}^\infty M_n$ converges then  $\sum_{n = 1}^\infty a_n\sin(nx)$ and $\sum_{n = 1}^\infty a_n \cos(nx)$ are uniformly convergent in $\RR$. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+
+\problem \textbf{Carothers 10.27} Show that $\sum_{n = 1}^{\infty} x^2/(1 + x^2)^n$ converges for all $|x| \leq 1$, but that convergence is not uniform. 
+\begin{proof} First note that for all $0 < |x| \leq 1$, we get the following pointwise convergence, 
+  \begin{equation*}
+    \sum_{n = 1}^{\infty} \dfrac{x^2}{(1 + x^2)^n} = x^2\sum_{n = 1}^{\infty} \left(\dfrac{1}{1 + x^2}\right)^n= \dfrac{x^2\left(\dfrac{1}{1 + x^2}\right)}{1 - \dfrac{1}{1 + x^2}} = \dfrac{\left(\dfrac{x^2}{1 + x^2}\right)}{\dfrac{x^2}{1 + x^2}} = 1. 
+  \end{equation*}
+  However clearly if $x = 0$ we get, 
+  \begin{equation*}
+    \sum_{n = 1}^{\infty} \dfrac{(0)^2}{(1 + (0)^2)^n} = 0 
+  \end{equation*}
+  Therefore $\sum_{n = 1}^{\infty} x^2/(1 + x^2)^n$ on $|x| \leq 1$ converges pointwise to $f$ where, 
+  \begin{equation*}
+    f(x) = \begin{cases}
+      1, x \neq 0\\
+      0, x = 0
+    \end{cases}
+  \end{equation*}
+Note that $f$ is discontinuous on $|x| \leq 1$ and therefore $\sum_{n = 1}^{\infty} x^2/(1 + x^2)^n$ a series of continuous function, cannot converge uniformly. 
+
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+
+
+\problem \textbf{Carothers 10.32} 
+\begin{enumerate}
+  \item[\textbf{(a)}] if $\sum_{n = 1}^{\infty} |a_n| < \infty$, show that $\sum_{n = 1}^{\infty} a_n e^{-nx}$ is uniformly convergent on $[0, \infty)$. 
+  \begin{proof} Let $M_n = |a_n|$ and note that for all $x \in [0, \infty)$ and $n$, we know that $e^{-nx} \leq 1$. Therefore it follows that for all $x \in [0, \infty)$, 
+    \begin{equation*}
+      |a_n e^{-nx}| = |a_n|e^{-nx} \leq |a_n| = M_n
+    \end{equation*} 
+    Since  $\sum_{n = 1}^{\infty}  M_n < \infty$ by the Weirstrass $M$-test it follows that $\sum_{n = 1}^{\infty} a_n e^{-nx}$ is uniformly convergent on $[0, \infty)$
+  \end{proof}
+  
+
+
+
+
+
+
+
+
+  \item[\textbf{(b)}] If we assume only that $(a_n)$ is bounded, show that $\sum_{n = 1}^{\infty} a_n e^{-nx}$ is uniformly convergent on $[\delta, \infty)$ for every $\delta > 0$. 
+  \begin{proof} Suppose $(a_n)$ is bounded, and therefore there exists an $A \in \RR$ such that $|a_n| \leq A$, for all $n$. Let $\delta > 0$, define $M_n = Ae^{-n\delta}$ and note that $M_n \geq 0$. Now note that for all $x \in [\delta, \infty)$ it follows that, 
+    \begin{equation*}
+      |a_n e^{-nx}| = |a_n|e^{-nx} \leq Ae^{-nx} = M_n.
+    \end{equation*}
+    Now to apply the Weirstrass $M$-test we must show that,$\sum_{n = 1}^{\infty} M_n < \infty$. Consider the following, 
+    \begin{equation*}
+      \sum_{n = 1}^{\infty} Ae^{-n\delta} = A \sum_{n = 1}^{\infty}e^{-n\delta} = A \sum_{n = 1}^{\infty}\left(\dfrac{1}{e^{\delta}}\right)^n.
+    \end{equation*}
+    Therefore $\sum_{n = 1}^{\infty} M_n $ is a convergent geometric series since $\delta > 0$ forces $|1/e^{\delta}| < 1$. Thus by the Weirstrass $M$-test, $\sum_{n = 1}^{\infty} a_n e^{-nx}$ is uniformly convergent on $[\delta, \infty)$ for every $\delta > 0$. 
+  \end{proof}
+\end{enumerate} 
+
+\vspace*{.15in}
+
+
+
+
+
+
+
+\end{problems}
+\end{document}

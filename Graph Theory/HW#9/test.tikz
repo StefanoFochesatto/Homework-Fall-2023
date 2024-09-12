@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{tikz}
+% \usepackage{graphicx}
+\usepackage{filecontents}
+
+
+\begin{document}
+\begin{filecontents*}{temp.tikz}
+			\begin{tikzpicture}[scale=1,every node/.style={draw,circle, inner sep=.05 cm}]
+				\node (s) at (0,0){$s$};
+				\node (a) at (1.5,1){$a$};
+				\node (b) at (1.5,-1){$b$};
+				\node (t) at (3,0){$t$};
+				\draw (a)--node[below] {a}(b)--(s)--(a)--(t)--(b);
+			\end{tikzpicture}	
+\end{filecontents*}
+
+\begin{figure}[htb]
+\centering
+\resizebox{2cm}{!}{\input{temp.tikz}}
+\caption{my figure drawn in tikz}\label{fig:myfigure}
+\end{figure}
+
+\end{document}

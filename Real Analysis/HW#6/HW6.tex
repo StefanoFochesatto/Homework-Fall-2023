@@ -1,0 +1,412 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage[english]{babel}
+\newtheorem*{theorem}{Theroem 7.12}
+
+%% Import a package useful for displaying graphics.
+\usepackage{graphicx}
+
+% Comment the following line to use TeX's default font of Computer Modern.
+\usepackage{times,txfonts}
+
+% Adjust line spacing an indentation
+\parindent 0pt
+\parskip 6pt plus 1pt
+
+\newtheoremstyle{ex215}% name of the style to be used
+  {18pt}% measure of space to leave above the theorem. E.g.: 3pt
+  {12pt}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {:}% punctuation between head and body
+  {2ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{ex215} 
+
+\makeatletter
+\newtheorem*{lemmacore}{Lemma \@currentlabel}
+\newenvironment{lemma}[1]
+{\def\@currentlabel{#1}\lemmacore}
+{\endlemmacore}
+
+\newtheorem*{corollarycore}{Corollary \@currentlabel}
+\newenvironment{corollary}[1]
+{\def\@currentlabel{#1}\corollarycore}
+{\endcorollarycore}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Stuff for getting the name/document date/title across the header
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyfoot[C]{\ifnum \value{page} > 1\relax\thepage\fi}
+\fancyhead[L]{\ifx\@doclabel\@empty\else\@doclabel\fi}
+\fancyhead[C]{\ifx\@docauthor\@empty\else\@docdate\fi}
+\fancyhead[R]{\ifx\@docauthor\@empty\@docdate\else\@docauthor\fi}
+\headheight 15pt
+
+
+\def\doclabel#1{\gdef\@doclabel{#1}}
+\doclabel{Use {\tt\textbackslash doclabel\{MY LABEL\}}.}
+\def\docdate#1{\gdef\@docdate{#1}}
+\docdate{Use {\tt\textbackslash docdate\{MY DATE\}}.}
+\def\docauthor#1{\gdef\@docauthor{#1}}
+%\docauthor{Use {\tt\textbackslash docauthor\{MY NAME\}}.}
+\let\@docauthor\@empty
+
+\newcounter{probcount}
+\newcounter{subprobcount}
+\newlength\probsep
+\newlength\pshrinking
+\newif\iffirstprob
+
+% The following commands allow for a handy override of labels in an enumeration,
+% without having the user keep track of what level the enumeration is happening at.
+% To use them, just put \listlabel{....} as the first command after a \begin{enumerate}.
+% The '....' is used to define the label.  You can access the name of the current label
+% counter with \thelistlabel.  Hence \listlabel{\textbf{\Alph{\thelistlabel}:}} would
+% generate lists with bold labels A:, B:, C:, etc.
+\newcommand{\listlabel}[1]{\def\thelistlabel{\@enumctr}%
+            \expandafter\def\csname label\@enumctr\endcsname{#1}}
+
+
+\newenvironment{subproblems}%
+  {\begin{enumerate}\listlabel{\alph{\thelistlabel})}%
+  %% Make the enumerate environment think we are making a list in a list:
+  \global \@newlistfalse}%
+  {\end{enumerate}}%
+
+\newenvironment{problems}%
+  {\ifhmode\unskip\par\fi\setcounter{probcount}{0}\probsep\parskip
+  \sbox\@tempboxa{\textbf{9.}}\pshrinking\wd\@tempboxa\advance\pshrinking\labelsep
+  \advance\linewidth -\pshrinking
+  \advance\@totalleftmargin\pshrinking
+  \advance\leftskip\pshrinking}%
+  {\ifhmode\unskip \par\fi\advance\leftskip-\pshrinking}%
+
+\newcommand{\problem}{%
+  \setcounter{subprobcount}{0}%
+  \stepcounter{probcount}%
+  \def\@currentlabel{\arabic{probcount}}%
+  \ifhmode
+    \unskip \par
+  \fi
+%  \addpenalty{-4000}%
+  \iffirstprob\else\addvspace\probsep\fi
+  \firstprobfalse
+  \hskip -\labelwidth\hskip -\labelsep 
+  \hbox to\labelwidth{\hss\textbf{\arabic{probcount}.}}\hskip\labelsep
+}%
+
+%% The localhead command puts a label on top of a paragraph -- handy for labels
+%% like "Solution:"
+\newskip\restoreparskip
+\newcommand{\localhead}[1]{\par\smallskip\textbf{#1}\nobreak\\}%
+%% The following arcane code was added to make the localhead enviroment get along
+%% with the ams theorem enviroment (which is based on the latex list enviroment).
+%% previously, the command was {\par\smallskip\textbf{#1}\\}, but the list
+%% enviroment would also add a par at the end of this paragraph, which would result
+%% in an extra blank line.  Our solution now is to put in our own par, but with
+%% none of the parskip glue that adds extra space between paragraphs.
+%%  \restoreparskip\parskip\parskip 0pt\par\nobreak\noindent\parskip\restoreparskip}%
+\newcommand\solution{\localhead{Solution:}}
+\newcommand\subsol{\stepcounter{subprobcount}\localhead{Solution, part \alph{subprobcount}:}}
+\newcommand\subsoleg[1]{\stepcounter{subprobcount}\par\textbf{Solution, part \alph{subprobcount}:} #1\\}
+\def\solver#1{(Solution by #1)\\\vskip-12pt}
+
+
+%% The default 'article' class has captions that label figures Figure 1, etc.  This is too 
+%% formal for homework sets, so we change \caption so that it just puts the caption text.
+%% Here I have just modified the \@makecaption command from the article class.
+%% Maybe I should change this in the future to let authors decide whether or not to label a figure.
+
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% The default implementation of the proof environment starts a new paragraph at the start of the proof,
+%% with the full parskip spacing. This only looks good following a theorem statement 
+%% if \parskip is set to zero.  We've got a medium sized parskip, so we overide this 
+%% questionable decision.
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \@topsep \topsep
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\makeatother
+
+% Shortcuts for blackboard bold number sets (reals, integers, etc.)
+\newcommand{\Reals}{\ensuremath{\mathbb R}}
+\newcommand{\Nats}{\ensuremath{\mathbb N}}
+\newcommand{\Ints}{\ensuremath{\mathbb Z}}
+\newcommand{\Rats}{\ensuremath{\mathbb Q}}
+\newcommand{\Cplx}{\ensuremath{\mathbb C}}
+\newcommand{\diam}[1]{\text{diam}(#1)}
+\newcommand\converges[1]{\mathrel{\mathop{\longrightarrow}\limits_{#1}}}
+\newcommand{\norm}[2]{\left \lVert #1 \right \rVert_{#2}}
+\newcommand{\abs}[1]{\lVert #1 \rVert}
+
+
+%% Some equivalents that some people may prefer.
+\let\RR\Reals
+\let\NN\Nats
+\let\II\Ints
+\let\CC\Cplx
+\let\ZZ\Ints
+
+\doclabel{Math F641: Homework 6}
+\docauthor{Stefano Fochesatto}
+\docdate{\today}
+\begin{document}
+\begin{problems}
+
+%_________________________________________________________________________
+%CHAPTER 8
+
+% The Maybe the function sin(1/x) for a bounded map that is not uniformly continuous and the identity map for am unbounded uniformly continuous function, you can choose \delta solely on \epsilon. Also the identiy map is lipshits continuous with C = 1  
+
+\problem \textbf{Carothers 8.55} Give an example of a bounded continuous map $f: \RR to \RR$ that is not uniformly continuous. Can an unbounded continuous function $f: \RR \to \RR$ be uniformly continuous? Explain, 
+\begin{proof} Consider the function $f(x) = \sin(e^x)$, this function is clearly bounded, and continuous as it is the composition of $\sin(x)$ and $e^x$, continuous functions. Consider the sequences $x_n = ln(n\pi)$ and $y_n = \ln(n\pi + \pi/2)$.
+ Now consider that 
+ \begin{equation*}
+  |y_n - x_n| = |\ln(n\pi + \pi/2) - \ln(n\pi)| = \left\lvert \ln\left(\dfrac{n\pi + \pi/2}{n\pi}\right)\right\rvert = \left\lvert \ln\left(1 + \dfrac{2}{n}\right)\right\rvert 
+ \end{equation*} 
+ Note that $|y_n - x_n|$ can be made arbitrarily small, since $\left\lvert \ln\left(1 + \dfrac{2}{n}\right)\right\rvert \to 0$. Let $\epsilon_0 = 1/2$ and $\delta > 0$, pick $h < \delta$ and choose $N$ such that $|y_N - x_N| < h$, so finally it follows that 
+  \begin{align*}
+    |\sin(e^{x_N}) - \sin(e^{y_N})| = |\sin(n\pi) - \sin(n\pi + \pi/2)| = 1 > 1/2 = \epsilon_0\\
+  \end{align*}
+\end{proof}
+
+\begin{proof}
+    For an example of an unbounded uniformly continuous function consider the identity map. This function is clearly unbounded, and is Lipschitz continuous with constant $K= 1$. 
+\end{proof}
+  \vspace*{.15in}
+
+
+
+% find a way to choose delta with respect to $\alpha$ and $K$. 0 < \x - y\ \leq \delta, raise everything to the alpha power, and see if that works. 
+\problem \textbf{Carothers 8.57} A function $f: \RR \to \RR$ is said to satisfy \textit{ Lipschitz condition of order $\alpha$}, where $\alpha > 0$, if there is a constant $K < \infty$ such that $|f(x) - f(y)| \leq K |x - y|^\alpha$, for all $x, y$. Prove that such a function is uniformly continuous,  
+\begin{proof} Suppose function $f: \RR \to \RR$ is \textit{ Lipschitz condition of order $\alpha$}. Let $\epsilon > 0$ and choose $\delta = (\epsilon/K^\alpha)^{1/\alpha}$ and note that if $0 < |x - y| < \delta$ it follows that, 
+  \begin{equation*}
+    |f(x) - f(y)| \leq K |x - y|^\alpha <\delta = \epsilon. 
+  \end{equation*}
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+% pretty easy, just use mvt to apply bound on the lipschitz fraction form. 
+\problem \textbf{Carothers 8.58} Show that any function $f: \RR \to \RR$ having a bounded derivative is Lipschitz of order 1
+\begin{proof} Suppose a function $f: \RR \to \RR$ with a bounded derivative, therefore for all $x \in \RR$ there exists a $K$ such that $|f'(x)| \leq K$. By implication $f$ is differentiable, and therefore continuous. Let $x, y \in \RR$ with $y < x$ and note $f:[y, x] \to \RR$ is continuous and differentiable over $(y, x)$. Thus by the Mean Value Theorem there exists a $c \in (y, x)$ such that, 
+  \begin{equation*}
+    f'(c) = \dfrac{f(x) - f(y)}{x - y}
+  \end{equation*}
+  By substitution it follows that, 
+  \begin{align*}
+    \lvert f'(c)\rvert  &\leq K\\
+    \lvert \dfrac{f(x) - f(y)}{x - y}\rvert &\leq K\\
+    \dfrac{\lvert f(x) - f(y)\rvert}{\lvert x - y\rvert } &\leq K\\
+    \lvert f(x) - f(y)\rvert &\leq K\lvert x - y\rvert ^{1}
+  \end{align*} 
+  Hence $f(x)$ is Lipschitz of order 1. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+
+% We have that there exists a delta to rule them all. We need to show that $\lim_{x \to 0^+} f(x) = C < \infty$ and greater than $-\infty$ for some candidate limit $C$, using a cauchy sequence argument Recall definitions of unifromly continuous. Apply lim inf and lim sup definition if we are looking at a sequence. It's not clear yet Show that the function extends to the closed interval [0, 1]
+\problem \textbf{Carothers 8.66} If $f:(0, 1) \to \RR$ is uniformly continuous, show that $\lim_{x \to 0^+} f(x)$ exists. Conclude that $f$ is bounded on $(0, 1)$.  
+\begin{proof} Suppose $f:(0, 1) \to \RR$ is uniformly continuous. Recall that by Theorem 8.16 (and in class) since $f$ is uniformly continuous, $\overline{(0, 1)} = [0, 1]$ and $\RR$ is complete, there exists a unique, uniformly continuous function $\overline{f}: [0, 1] \to Y$ such that $\overline{f}|_{(0, 1)} = f$. Note that $\lim_{x \to 0^+} \overline{f}(x) = \overline{f}(0)$ since $\overline{f}$ continuous over $[0, 1]$ and since $\overline{f}|_{(0, 1)} = f$ it follows that $\lim_{x \to 0^+}f(x) =\lim_{x \to 0^+} \overline{f}(x) = \overline{f}(0)$.\\
+
+
+
+  Now note that since $\overline{f}$ is continuous and it's domain is compact, $\overline{f}$ is bounded. Since $\overline{f}|_{(0, 1)} = f$ it follows that $f$ is bounded. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+% Use the result that bounded linear maps are continuous, then apply cauchy swarz to show that the inner product is bounded. See section about operator norm for the norm L = sup thing. 
+\problem \textbf{Carothers 8.76} Fix $y \in \RR^n$ and define a linear map $L: \RR^n \to \RR$
+by $L(x) = \langle x, y\rangle$. Show that $L$ is continuous and compute $\norm{L}{} = \sup_{x \neq 0} \abs{L(x)}/\norm{x}{2}$.[Hint: Cauchy-Schwarz!]
+
+
+\begin{proof} Fix $y \in \RR^n$ and define a linear map $L: \RR^n \to \RR$ by $L(x) = \langle x, y\rangle$. Suppose $x \in \RR^n$ and note that by Cauchy-Schwarz it follows that, 
+\begin{equation*}
+  |L(x)| = \left\lvert\sum_{i = 1}^n x_iy_i\right\rvert \leq \sum_{i = 1}^n |x_iy_i| \leq \norm{y}{2}\norm{x}{2}.
+\end{equation*}
+Therefore $L(x)$ is bounded, and since it is a linear map we conclude that $L(x)$ is continuous. Now considering the operator norm we find that, 
+\begin{equation*}
+  \norm{L}{} = \sup_{x \neq 0} \dfrac{\lvert L(x)\rvert}{\norm{x}{2}} \leq \sup_{x \neq 0} \dfrac{\norm{y}{2}\norm{x}{2}}{\norm{x}{2}} = \norm{y}{2}.
+\end{equation*}
+So $\norm{L}{} \leq \norm{y}{2}$,  
+
+Now consider $x \in \RR^n$ such that $x = y$, 
+\begin{equation*}
+  \dfrac{\lvert L(y)\rvert}{\norm{y}{2}}= \dfrac{|\langle y, y \rangle|}{\norm{y}{2}} = \dfrac{\norm{y}{2}\norm{y}{2}}{\norm{y}{2}} = \norm{y}{2}.   
+\end{equation*}
+So $\norm{L}{} = \norm{y}{2}$. 
+
+
+
+
+\end{proof}
+\vspace*{.15in}
+
+
+%Look at notes regarding unifrom continuity. should be a couple line proof
+% Just apply definitino of what means to add two sequences in $\ell_\infty$ to get that $f$ is linear, then use the inf defintion of the operator norm. 
+\problem \textbf{Carothers 8.77} Fix $k \geq 1$ and define $f: \ell_\infty \to \RR$ by $f(x) = x(k)$. Show that $f$ is linear and has $\norm{f}{} = 1$.
+\begin{proof} Fix $k \geq 1$ and define $f: \ell_\infty \to \RR$ by $f(x) = x(k)$. Let $x_1, x_2 \in \ell_\infty$, and $a, b \in \RR$. Clearly $ax_1 + bx_2$ is still a bounded sequence and therefore in $\ell_\infty$, applying $f$ we get the following,
+  \begin{equation*}
+    f(ax_1 + bx_2) = ax_1(k) + bx_2(k) = af(x_1) + bf(x_2). 
+  \end{equation*}
+  Thus $f$ is linear. 
+  Now consider $\norm{f}{}$ and note that since $|x(k)| < \norm{x}{\infty}$, we get the following
+  \begin{equation*}
+    \norm{f}{} = \sup_{x \neq 0} \dfrac{|f(x)|}{\norm{x}{\infty}} = \sup_{x \neq 0}\dfrac{|x(k)|}{\norm{x}{\infty}} \leq \sup_{x \neq 0}\dfrac{\norm{x}{\infty}}{\norm{x}{\infty}} = 1
+  \end{equation*}
+  Now consider an $x \in \ell_\infty$ such that $|x(k)| = \norm{x}{\infty}$, 
+  \begin{equation*}
+    \dfrac{|f(x)|}{\norm{x}{\infty}} = \dfrac{|x(k)|}{\norm{x}{\infty}} = \dfrac{\norm{x}{\infty}}{\norm{x}{\infty}} = 1.
+  \end{equation*}
+  So therefore $\norm{f}{} = 1$. 
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+% Is $f$ bounded, we need to show that $\norm{f(x_n)}{1}$ doesn't blow up to infinity. Use cauchy swartz I think and a previous HW problem. The one were we had to show that a certain sequence in $\ell_2$ converged, and we could think about it as an inner product with 1/n. 
+\problem \textbf{Carothers 8.78} Define a linear map $f:\ell_2 \to \ell_1$ by $f(x) = (x(n)/n)_{n = 1}^\infty$. Is $f$ bounded? If so, what is $\norm{f}{}$. 
+\begin{proof} Let $x \in \ell_2$, 
+  and note that by Cauchy-Schwarz inequality, 
+  \begin{equation*}
+    \norm{f(x)}{1} = \sum_{i = 1}^\infty \left\lvert\dfrac{x(i)}{i}\right\rvert =\sum_{i = 1}^\infty \lvert x(i)\rvert \left\lvert\dfrac{1}{i}\right\rvert \leq \norm{x}{2}\norm{\frac{1}{n}}{2} = \dfrac{\pi}{\sqrt{6}}\norm{x}{2}
+  \end{equation*}
+  Hence $f$ is a bounded linear map and we can also conclude that $\norm{f}{} \leq \frac{\pi}{\sqrt{6}}$. Finally note that note that for $x = (1/n)_{n = 1}^\infty$ we get the following, 
+  \begin{equation*}
+    \dfrac{\norm{f(x)}{1}}{\norm{x}{2}} = \dfrac{\sum_{i = 1}^\infty \left\lvert\dfrac{1}{i^2}\right\rvert }{\norm{x}{2}} = \dfrac{\sum_{i = 1}^\infty \left(\dfrac{1}{i}\right)^2 }{\norm{x}{2}} = \dfrac{\norm{x}{2}^2}{\norm{x}{2}}=\dfrac{\pi}{\sqrt{6}}.
+  \end{equation*}
+  Hence $\norm{f}{} = \frac{\pi}{\sqrt{6}}$.
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+% Integral is a from of linear map, I think, show that then show something easy in Theorem 8.20 to get continuity. Not sure how we are choosing the norm in $C[a, b]$ but we will need to in order to find the operator norm, and it might make it easier to show this thing is continuous if we can show linear and bounded,
+
+%Show linear, then show bounded, since $f(t)$ is cts on closed interval, f([a, b]) is closed and bounded in $\\R$ a finite metric space. Then this thing is bouned above by the maximum function value 
+\problem \textbf{Carothers 8.80} Show that the definite integral $I(f) = \int_a^bf(t) dt$ is continuous from $C[a, b]$ into $\RR$. What is $\norm{I}{}$
+\begin{proof} Let $f, g \in C[a, b]$ and $\alpha, \beta \in \RR$. Note that the definite integral is a linear operator, 
+  \begin{equation*}
+    I(\alpha f+\beta g) = \int_a^b\alpha f(t) + \beta g(t) dt = \alpha \int_a^bf(t)dt + \beta \int_a^bg(t) dt = \alpha I(f) + \beta I(g). 
+  \end{equation*}
+  Now we will show that the definite integral is a bounded linear functional on $C[a, b]$, and is therefore continuous. Let $f \in C[a, b]$ and recall that since $f$ is a continuous function over a compact interval it must achieve it's minimum and maximum, and hence there exists a $t \in [a, b]$ such that $|f(t)| = \norm{f}{\infty}$. So it follows, 
+  \begin{equation*}
+    |I(f)| = \left\lvert\int_a^bf(t) dt\right\rvert \leq  \int_a^b|f(t)|dt \leq \int_a^b\norm{f}{\infty}dt = (b - a)\norm{f}{\infty} 
+  \end{equation*}
+  Thus $I$ is a bounded linear operator, and is therefore continuous. We also conclude that $\norm{I}{} \leq (b - a)$. Now let $f \in C[a, b]$ such that $f(x) = C$ and $C \neq 0$, we find that
+  \begin{equation*}
+    \dfrac{|I(f)|}{\norm{f}{\infty}} = \dfrac{ \left\lvert\int_a^bf(t) dt\right\rvert}{\norm{f}{\infty}} = \dfrac{\left\lvert(b - a)C\right\rvert}{|C|} = \dfrac{(b - a)|C|}{|C|} = (b - a). 
+  \end{equation*}
+  Therefore $\norm{f}{} = (b - a)$. 
+  
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+\problem \textbf{Carothers 8.81} Prove that the indefinite integral, defined by $T(f)(x)= \int_a^x f(t) dt$, is continuous as a map from $C[a, b]$ into $C[a, b]$. Estimate $\norm{T}{}$.
+\begin{proof} First we will show that $T$ is a linear operator. Let $f, g \in C(a, b)$ and $\alpha, \beta \in \RR$. 
+  Note that, 
+  \begin{equation*}
+    T(\alpha f + \beta g)(x) = \int_a^x \left(\alpha f(t) + \beta g(t)\right) dt = \alpha \int_a^x f(t)dt + \beta \int_a^x g(t)dt = \alpha T(f)(x) + \beta T(g)(x). 
+  \end{equation*}
+  We proceed to show that $T$ is bounded, let $f \in C[a, b]$ and again note that since $f$ is a continuous function over a compact interval there exists $t \in [a, b]$ such that $|f(t)| = \norm{f}{\infty}$. Now consider the following,
+  \begin{multline*}
+    \norm{T(f)(x)}{\infty} = \max_{a \leq x \leq b} \left\lvert\int_a^x f(t) dt\right\rvert \leq \max_{a \leq x \leq b} \int_a^x |f(t)| dt \\ \leq \max_{a \leq x \leq b} \int_a^x \norm{f}{\infty} dt = \max_{a \leq x \leq b} (x - a)\norm{f}{\infty} = (b - a) \norm{f}{\infty}
+  \end{multline*}
+  Thus $T$ is a bounded linear operator and is therefore continuous. We can also conclude that $\norm{T}{} \leq (b - a)$. Again consider $f \in C[a, b]$ such that $f(x) = C$ and $C \neq 0$, we find that,
+  \begin{equation*}
+    \dfrac{\norm{T(f)(x)}{\infty}}{\norm{f}{\infty}} = \max_{a \leq x \leq b} \dfrac{\left\lvert\int_a^x f(t) dt\right\rvert}{\norm{f}{\infty}} = \max_{a \leq x \leq b}\dfrac{\left\lvert(x - a) C\right\rvert}{|C|} = \max_{a \leq x \leq b} (x - a) = (b - a).
+  \end{equation*}
+  Hence $\norm{T}{} = (b - a)$
+\end{proof}
+
+\vspace*{.15in}
+
+
+
+
+% A space is complete if every absolutly convergent sereis converges. Think uniform converges of the sequence of partial sums formed by the absolutely convergent series of linear maps. 
+\problem \textbf{Carothers 8.84} Prove that $B(V, W)$ is complete whenever $W$ is complete. 
+\begin{proof} Let $V$ and $W$ be normed vector spaces, and suppose $W$ is complete. Consider $B(V, W)$ and recall that $B(V, W)$ is complete if $\sum_{n = 1}^\infty T_n$ converges in $B(V, W)$ whenever $\sum_{n = 1}^\infty \norm{T_n}{} < \infty$. Consider the following candidate limit, $T(x) = \sum_{n = 1}^\infty T_n(x)$. Recall that $T_n(x)$
+  is a sequence in $W$, a complete space, and therefore $\sum_{n = 1}^\infty T_n(x)$ converges whenever $\sum_{n = 1}^\infty \norm{T_n(x)}{W}$ converges. Recall that by the definition of the operator norm, 
+  \begin{align*}
+    \norm{T_n}{} \geq \dfrac{\norm{T_n(x)}{W}}{\norm{x}{V}}\\
+    \norm{T_n}{}\norm{x}{V} \geq \norm{T_n(x)}{W}.
+  \end{align*}
+  Therefore it follows that, 
+  \begin{equation}
+    \sum_{n = 1}^\infty \norm{T_n(x)}{W} \leq \sum_{n =1}^\infty \norm{T_n}{}\norm{x}{V} = \norm{x}{V}\sum_{n =1}^\infty \norm{T_n}{} < \infty. 
+  \end{equation}
+  Therefore since $W$ is complete $\sum_{n = 1}^\infty T_n(x)$ converges and thus $T$ is well-defined. Now we must demonstrate that $T$ is a bounded linear operator. Evidently $T$ is linear, to show $T$ is bounded let $C = \sum_{n =1}^\infty \norm{T_n}{}$ and we get the following,
+  \begin{equation*}
+    \norm{T(x)}{W} \leq \sum_{n = 1}^\infty \norm{T_n(x)}{W} \leq \norm{x}{V}\sum_{n =1}^\infty \norm{T_n}{} = C\norm{x}{V}
+  \end{equation*}
+  Therefore $T \in B(V,W)$. What is left to show is that $\sum_{n = 1}^\infty T_n = T$. Consider the sequence of partial sums $(S_n)$ defined by $\sum_{i = 1}^n T_i$. Let $\epsilon > 0$ and choose $N$ such that the residual of $\sum_{i = N+1}^\infty \norm{T_n}{} < \epsilon$, then it follows that for all $n \geq N$ we get the following, 
+   \begin{equation*}
+    \norm{S_n - T}{} = \norm{\sum_{i = 1}^n T_i - \sum_{i = 1}^\infty T_i}{} = \norm{\sum_{i = n+1}^{\infty} T_i}{} \leq \sum_{i = n+1}^\infty \norm{T_i}{} < \epsilon.
+  \end{equation*}
+  Therefore $\sum_{n = 1}^\infty T_n = T$ and thus $B(V, W)$ is complete. 
+
+
+
+
+
+
+
+
+
+
+
+
+\end{proof}
+\vspace*{.15in}
+
+
+
+
+
+\end{problems}
+\end{document}
